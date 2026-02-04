@@ -1,0 +1,35 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Build outputs
+.next
+out
+build
+dist
+
+# Generated files
+*.lock
+bun.lock
+package-lock.json
+
+# Cache
+.cache
+*.log
+
+# Environment
+.env*
+!.env.example
+
+# IDE
+.idea
+.vscode
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test coverage
+coverage

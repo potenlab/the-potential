@@ -1,0 +1,1604 @@
+{
+  "project": "The Potential",
+  "generated": "2026-02-04",
+  "updated": "2026-02-04",
+  "sources": [
+    "frontend-plan.md",
+    "backend-plan.md",
+    "ui-ux-plan.md",
+    "prd.md"
+  ],
+  "componentArchitecture": {
+    "description": "All UI components follow a three-layer architecture",
+    "layers": [
+      "Layer 1: shadcn primitives (installed via CLI)",
+      "Layer 2: Customized wrappers (src/components/ui/) - App-specific variants & styling",
+      "Layer 3: Feature components (src/features/[name]/components/) - Business logic compositions"
+    ],
+    "principle": "shadcn primitives are NEVER used directly in feature components. They are always wrapped in customized versions."
+  },
+  "i18n": {
+    "library": "next-intl",
+    "defaultLocale": "ko",
+    "supportedLocales": ["ko", "en"],
+    "routePrefix": "always",
+    "messageFiles": [
+      "src/messages/ko.json",
+      "src/messages/en.json"
+    ],
+    "configFiles": [
+      "src/i18n/routing.ts",
+      "src/i18n/request.ts",
+      "src/i18n/navigation.ts"
+    ]
+  },
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Foundation",
+      "tasks": [
+        {
+          "id": "1.1",
+          "subject": "Project Setup and Configuration",
+          "description": "Initialize Next.js 16 project with App Router, TypeScript, ESLint, and Prettier",
+          "source": "frontend-plan.md",
+          "expectedOutput": "Next.js 16 project with TypeScript, ESLint, Prettier configured; Git repository initialized",
+          "acceptanceCriteria": [
+            "npm run dev starts development server without errors",
+            "TypeScript compilation passes with no errors",
+            "ESLint runs without critical errors",
+            "Project structure matches Bulletproof React architecture"
+          ],
+          "dependencies": [],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.2",
+          "subject": "Install Core Dependencies",
+          "description": "Install all required npm packages for Supabase, state management, animation, forms, class-variance-authority, and next-intl",
+          "source": "frontend-plan.md",
+          "expectedOutput": "All core and dev dependencies installed in package.json including class-variance-authority and next-intl",
+          "acceptanceCriteria": [
+            "npm install completes without errors",
+            "All packages resolve to correct versions",
+            "No peer dependency conflicts",
+            "class-variance-authority installed for component variants",
+            "next-intl installed for internationalization"
+          ],
+          "dependencies": ["1.1"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "1.3",
+          "subject": "Configure Tailwind CSS v4 with Design Tokens",
+          "description": "Setup CSS custom properties for colors, typography, spacing, border-radius, shadows, glow effects",
+          "source": "ui-ux-plan.md",
+          "expectedOutput": "src/app/globals.css with all design tokens from UI/UX plan",
+          "acceptanceCriteria": [
+            "Primary color (#0079FF) renders correctly",
+            "Background (#000000) applied to body",
+            "Card backgrounds (#121212) display correctly",
+            "Border radius (24px / rounded-3xl) applies to components",
+            "Glow effects visible on hover states"
+          ],
+          "dependencies": ["1.2"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.4",
+          "subject": "Initialize shadcn/ui",
+          "description": "Initialize shadcn/ui in project with CLI, create components.json and cn utility",
+          "source": "frontend-plan.md",
+          "expectedOutput": "shadcn/ui initialized with components.json and src/lib/cn.ts utility",
+          "acceptanceCriteria": [
+            "components.json exists with correct configuration",
+            "src/lib/cn.ts exports cn function (clsx + tailwind-merge)",
+            "shadcn CLI can add components",
+            "npx shadcn@latest add button works"
+          ],
+          "stepsToReproduce": [
+            "Run: npx shadcn@latest init",
+            "Select style: Default, base color: Slate, CSS variables: Yes",
+            "Verify components.json created",
+            "Verify cn utility created",
+            "Test: npx shadcn@latest add button"
+          ],
+          "dependencies": ["1.3"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "1.5",
+          "subject": "Install Required shadcn Components",
+          "description": "Install all required shadcn primitive components via CLI",
+          "source": "frontend-plan.md",
+          "expectedOutput": "All shadcn primitive components installed in src/components/ui/",
+          "acceptanceCriteria": [
+            "All listed components exist in src/components/ui/",
+            "No TypeScript errors in component files",
+            "Components are importable",
+            "npm run build passes"
+          ],
+          "stepsToReproduce": [
+            "Run: npx shadcn@latest add button input textarea checkbox radio-group select switch slider form label input-otp card separator scroll-area alert alert-dialog dialog drawer sheet sonner progress skeleton spinner tabs navigation-menu breadcrumb pagination command avatar badge table hover-card tooltip popover dropdown-menu combobox accordion collapsible toggle toggle-group carousel calendar",
+            "Verify all component files exist",
+            "Run npm run build to verify no errors"
+          ],
+          "dependencies": ["1.4"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "1.6",
+          "subject": "Create Customized Button Wrapper",
+          "description": "Create Button component wrapper with The Potential's design system variants using cva",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/ui/button.tsx with variants: primary, primary-glow, secondary, outline, ghost, destructive, link; sizes: sm, md, lg, xl, icon",
+          "acceptanceCriteria": [
+            "Button uses class-variance-authority (cva)",
+            "Primary variant uses Electric Blue (#0079FF)",
+            "Primary-glow variant has cyan (#00E5FF) with glow shadow",
+            "Loading state shows Spinner component",
+            "All sizes use correct heights (32px, 40px, 48px, 56px)",
+            "Border radius uses rounded-xl/rounded-2xl",
+            "Supports leftIcon, rightIcon, loading, asChild props"
+          ],
+          "stepsToReproduce": [
+            "Import Button from @/components/ui/button",
+            "Render <Button variant='primary'>Click me</Button>",
+            "Verify Electric Blue background",
+            "Render <Button variant='primary-glow'>CTA</Button>",
+            "Verify cyan background with glow shadow",
+            "Render <Button loading>Loading</Button>",
+            "Verify spinner shows and button is disabled"
+          ],
+          "dependencies": ["1.5"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.7",
+          "subject": "Create Customized Card Wrapper",
+          "description": "Create Card component wrapper with The Potential's design system variants",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/ui/card.tsx with variants: default, elevated, gradient, interactive, glow, ghost; padding: none, sm, md, lg",
+          "acceptanceCriteria": [
+            "Card uses 24px border radius (rounded-3xl)",
+            "Default variant uses bg-card border-white/8",
+            "Interactive variant has hover scale and border color change",
+            "Glow variant has primary color glow shadow",
+            "Sub-components: CardHeader, CardTitle, CardDescription, CardContent, CardFooter"
+          ],
+          "stepsToReproduce": [
+            "Import Card from @/components/ui/card",
+            "Render <Card variant='default'>Content</Card>",
+            "Verify rounded-3xl border radius",
+            "Render <Card variant='interactive'>Click me</Card>",
+            "Hover and verify scale animation and border change"
+          ],
+          "dependencies": ["1.5"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.8",
+          "subject": "Create Customized Input Wrapper",
+          "description": "Create Input component wrapper with label, helper text, error states, icons",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/ui/input.tsx with props: label, helperText, error, leftIcon, rightIcon",
+          "acceptanceCriteria": [
+            "Input height is 48px (h-12)",
+            "Border radius is rounded-2xl",
+            "Error state shows red border and error message",
+            "Focus state shows primary color ring",
+            "Left/right icons properly positioned"
+          ],
+          "stepsToReproduce": [
+            "Import Input from @/components/ui/input",
+            "Render <Input label='Email' placeholder='Enter email' />",
+            "Verify 48px height and proper styling",
+            "Render <Input error='Invalid email' />",
+            "Verify red border and error message below input"
+          ],
+          "dependencies": ["1.5"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.9",
+          "subject": "Create Customized Textarea Wrapper",
+          "description": "Create Textarea component wrapper with label, helper text, error states",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/ui/textarea.tsx with same styling as Input",
+          "acceptanceCriteria": [
+            "Minimum height 120px",
+            "Border radius rounded-2xl",
+            "Error and focus states match Input component",
+            "Supports label, helperText, error props"
+          ],
+          "dependencies": ["1.5"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "1.10",
+          "subject": "Create Customized Badge Wrapper",
+          "description": "Create Badge component wrapper with semantic variants",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/ui/badge.tsx with variants: default, success, warning, error, info, muted, outline; sizes: sm, md, lg",
+          "acceptanceCriteria": [
+            "Badge has pill shape (rounded-full)",
+            "Success variant is emerald green",
+            "Warning variant is orange",
+            "Error variant is red",
+            "Uses cva for variant management"
+          ],
+          "dependencies": ["1.5"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "1.11",
+          "subject": "Create Customized Avatar Wrapper",
+          "description": "Create Avatar component wrapper with size variants and status indicator",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/ui/avatar.tsx with sizes: xs(24px), sm(32px), md(48px), lg(64px), xl(96px), 2xl(128px)",
+          "acceptanceCriteria": [
+            "All sizes render correctly",
+            "Status indicator positioned at bottom-right",
+            "Status colors: success(green), warning(orange), error(red), muted(gray)",
+            "Uses Radix Avatar primitive",
+            "Includes AvatarImage and AvatarFallback components"
+          ],
+          "dependencies": ["1.5"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.12",
+          "subject": "Create Customized Dialog Wrapper",
+          "description": "Create Dialog component wrapper with dark theme styling and animations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/ui/dialog.tsx with sub-components and dark theme",
+          "acceptanceCriteria": [
+            "Overlay is 80% black with backdrop blur",
+            "Content has rounded-3xl border radius",
+            "Close button styled with hover state",
+            "Animations work on open/close",
+            "Includes DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter"
+          ],
+          "dependencies": ["1.5"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.13",
+          "subject": "Create Customized Select, Tabs, Skeleton, Sonner, Progress, Spinner Wrappers",
+          "description": "Create remaining customized component wrappers for the design system",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/ui/select.tsx, tabs.tsx, skeleton.tsx, sonner.tsx, progress.tsx, spinner.tsx",
+          "acceptanceCriteria": [
+            "Select trigger has 48px height and rounded-2xl",
+            "Tabs have animated active indicator",
+            "Skeleton has shimmer animation",
+            "Sonner shows dark theme toasts",
+            "Progress bar uses primary color",
+            "Spinner has sm, md, lg sizes"
+          ],
+          "dependencies": ["1.5"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.14",
+          "subject": "Setup Supabase Project",
+          "description": "Create Supabase project and configure environment variables",
+          "source": "backend-plan.md",
+          "expectedOutput": "Supabase project created with API keys in .env.local",
+          "acceptanceCriteria": [
+            "Supabase dashboard accessible",
+            "API keys generated and stored securely",
+            "Connection test passes from application"
+          ],
+          "dependencies": [],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "1.15",
+          "subject": "Enable PostgreSQL Extensions",
+          "description": "Enable pg_trgm and unaccent extensions for text search",
+          "source": "backend-plan.md",
+          "expectedOutput": "pg_trgm and unaccent extensions enabled in Supabase",
+          "acceptanceCriteria": [
+            "pg_trgm extension exists in pg_extension",
+            "unaccent extension exists in pg_extension"
+          ],
+          "dependencies": ["1.14"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "1.16",
+          "subject": "Configure Supabase Client (Browser + Server)",
+          "description": "Setup Supabase clients for browser, server, and middleware",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/lib/supabase/client.ts, server.ts, middleware.ts files",
+          "acceptanceCriteria": [
+            "Browser client creates authenticated sessions",
+            "Server client reads cookies correctly",
+            "Middleware redirects unauthenticated users from protected routes"
+          ],
+          "dependencies": ["1.14"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.17",
+          "subject": "Setup React Query Provider",
+          "description": "Configure QueryClient with default options and provider wrapper",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/lib/query-client.ts and src/app/providers.tsx",
+          "acceptanceCriteria": [
+            "useQuery hooks work throughout application",
+            "Stale time configured to 60 seconds",
+            "refetchOnWindowFocus disabled"
+          ],
+          "dependencies": ["1.2"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "1.18",
+          "subject": "Setup next-intl Configuration",
+          "description": "Configure next-intl with Korean (default) and English locales, routing, and navigation utilities",
+          "source": "frontend-plan.md",
+          "priority": "critical",
+          "expectedOutput": [
+            "src/i18n/routing.ts with locale routing configuration",
+            "src/i18n/request.ts with server-side request configuration",
+            "src/i18n/navigation.ts with localized navigation utilities",
+            "next.config.ts updated with createNextIntlPlugin"
+          ],
+          "acceptanceCriteria": [
+            "routing.ts exports locales array ['ko', 'en'] with defaultLocale 'ko'",
+            "request.ts loads correct messages based on locale",
+            "navigation.ts exports localized Link, redirect, usePathname, useRouter",
+            "next.config.ts wraps config with withNextIntl"
+          ],
+          "stepsToReproduce": [
+            "Create src/i18n/routing.ts with defineRouting({ locales: ['ko', 'en'], defaultLocale: 'ko', localePrefix: 'always' })",
+            "Create src/i18n/request.ts with getRequestConfig loading messages dynamically",
+            "Create src/i18n/navigation.ts with createNavigation(routing)",
+            "Update next.config.ts: import createNextIntlPlugin and wrap export with withNextIntl",
+            "Import Link from @/i18n/navigation and verify it adds locale prefix"
+          ],
+          "dependencies": ["1.2"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.19",
+          "subject": "Create Middleware for Locale Routing",
+          "description": "Create Next.js middleware for automatic locale detection and routing",
+          "source": "frontend-plan.md",
+          "priority": "critical",
+          "expectedOutput": [
+            "src/middleware.ts with next-intl middleware for locale detection",
+            "Middleware matcher configured to handle locale prefixes"
+          ],
+          "acceptanceCriteria": [
+            "Visiting / redirects to /ko (default locale)",
+            "Visiting /en shows English version",
+            "Visiting /ko shows Korean version",
+            "API routes, static files, and Next.js internals excluded from middleware",
+            "Browser language detection works for first visit"
+          ],
+          "stepsToReproduce": [
+            "Create src/middleware.ts using createMiddleware from next-intl/middleware",
+            "Import routing from @/i18n/routing",
+            "Export default createMiddleware(routing)",
+            "Configure matcher: ['/', '/(ko|en)/:path*', '/((?!api|trpc|_next|_vercel|.*\\\\..*).*)']\n",
+            "Visit / in browser - should redirect to /ko",
+            "Visit /en/home - should show English content"
+          ],
+          "dependencies": ["1.18"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.20",
+          "subject": "Create Translation Files (Korean + English)",
+          "description": "Create complete translation files for Korean (default) and English",
+          "source": "frontend-plan.md",
+          "priority": "critical",
+          "expectedOutput": [
+            "src/messages/ko.json with complete Korean translations",
+            "src/messages/en.json with complete English translations"
+          ],
+          "acceptanceCriteria": [
+            "Both JSON files are valid and parseable",
+            "All translation keys match between ko.json and en.json",
+            "Korean translations use natural, native Korean expressions",
+            "English translations are grammatically correct",
+            "Supports interpolation (e.g., {name}, {count})"
+          ],
+          "stepsToReproduce": [
+            "Create src/messages/ko.json with namespaces: common, navigation, auth, home, experts, thread, supportPrograms, clubs, profile, admin, errors, validation, footer",
+            "Create src/messages/en.json with identical structure and matching keys",
+            "Run JSON.parse() on both files to verify validity",
+            "Compare keys between files to ensure parity",
+            "Test interpolation: t('home.welcome', { name: 'Test' })"
+          ],
+          "dependencies": ["1.18"],
+          "complexity": "High",
+          "passed": true
+        },
+        {
+          "id": "1.21",
+          "subject": "Create Language Switcher Component",
+          "description": "Create dropdown component for switching between Korean and English",
+          "source": "frontend-plan.md",
+          "priority": "high",
+          "expectedOutput": [
+            "src/components/common/language-switcher.tsx"
+          ],
+          "acceptanceCriteria": [
+            "Component uses useLocale() from next-intl to get current locale",
+            "Component uses usePathname() and useRouter() from @/i18n/navigation",
+            "Clicking language option changes URL to new locale preserving path",
+            "Current language shows checkmark indicator",
+            "Dropdown styled according to design system (dark theme)",
+            "Uses customized DropdownMenu, Button from @/components/ui/"
+          ],
+          "stepsToReproduce": [
+            "Create language-switcher.tsx as client component",
+            "Use useLocale() to get current locale",
+            "Use usePathname() and useRouter() from @/i18n/navigation",
+            "Render DropdownMenu with Globe icon trigger",
+            "Map routing.locales to DropdownMenuItems with native names",
+            "On click, call router.replace(pathname, { locale: newLocale })",
+            "Test: click English, verify URL changes to /en/..."
+          ],
+          "dependencies": ["1.18", "1.12"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.22",
+          "subject": "Update Root Layout with NextIntlClientProvider",
+          "description": "Create locale-based root layout with NextIntlClientProvider wrapper",
+          "source": "frontend-plan.md",
+          "priority": "critical",
+          "expectedOutput": [
+            "src/app/[locale]/layout.tsx as root layout with dynamic locale segment"
+          ],
+          "acceptanceCriteria": [
+            "Layout accepts params: Promise<{ locale: string }> and awaits it",
+            "Validates locale against routing.locales, calls notFound() if invalid",
+            "Calls setRequestLocale(locale) for static rendering",
+            "Wraps children with NextIntlClientProvider passing locale and messages",
+            "HTML lang attribute set to current locale",
+            "generateStaticParams returns all supported locales",
+            "generateMetadata produces locale-specific metadata with alternates"
+          ],
+          "stepsToReproduce": [
+            "Create src/app/[locale]/layout.tsx",
+            "Add generateStaticParams returning [{locale: 'ko'}, {locale: 'en'}]",
+            "Await params and destructure locale",
+            "Validate locale with hasLocale(routing.locales, locale)",
+            "Call setRequestLocale(locale) before useTranslations",
+            "Get messages with await getMessages()",
+            "Wrap children with <NextIntlClientProvider locale={locale} messages={messages}>",
+            "Set <html lang={locale}>",
+            "Visit /ko - verify lang='ko', /en - verify lang='en'"
+          ],
+          "dependencies": ["1.18", "1.19", "1.20"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "1.23",
+          "subject": "Update Header and Bottom Nav with i18n",
+          "description": "Update navigation components to use translations and localized Link",
+          "source": "frontend-plan.md",
+          "priority": "high",
+          "expectedOutput": [
+            "Header component uses useTranslations('navigation')",
+            "Header includes LanguageSwitcher component",
+            "Bottom nav uses useTranslations('navigation')",
+            "Both use Link from @/i18n/navigation"
+          ],
+          "acceptanceCriteria": [
+            "Navigation labels display in current locale language",
+            "Language switcher visible in header",
+            "Locale persists when navigating between pages",
+            "Active state indicators still work with localized paths"
+          ],
+          "stepsToReproduce": [
+            "Update Header to import useTranslations from next-intl",
+            "Import Link from @/i18n/navigation instead of next/link",
+            "Replace hardcoded labels with t('home'), t('support'), t('thread'), etc.",
+            "Add <LanguageSwitcher /> to header actions",
+            "Update BottomNav similarly",
+            "Navigate between pages - verify locale persists",
+            "Switch language via switcher - verify all labels update"
+          ],
+          "dependencies": ["1.21", "2.12", "2.13"],
+          "complexity": "Medium",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Authentication and Core Layout",
+      "tasks": [
+        {
+          "id": "2.1",
+          "subject": "Create Database Enums and Types",
+          "description": "Create PostgreSQL enum types for user_role, approval_status, expert_status, expert_category",
+          "source": "backend-plan.md",
+          "expectedOutput": "All enum types created in PostgreSQL",
+          "acceptanceCriteria": [
+            "user_role enum with member, expert, admin values",
+            "approval_status enum with pending, approved, rejected, suspended values",
+            "expert_status enum with draft, pending_review, approved, rejected values",
+            "expert_category enum with all category values"
+          ],
+          "dependencies": ["1.15"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.2",
+          "subject": "Create Profiles Table with Indexes",
+          "description": "Create profiles table with all columns, constraints, and indexes",
+          "source": "backend-plan.md",
+          "expectedOutput": "profiles table with GIN indexes for search and arrays",
+          "acceptanceCriteria": [
+            "Table created with all columns from schema",
+            "Primary key references auth.users(id)",
+            "All indexes created including full-text search",
+            "Check constraints valid"
+          ],
+          "dependencies": ["2.1"],
+          "complexity": "High",
+          "passed": true
+        },
+        {
+          "id": "2.3",
+          "subject": "Create Expert Profiles Table",
+          "description": "Create expert_profiles table with business info and verification workflow",
+          "source": "backend-plan.md",
+          "expectedOutput": "expert_profiles table with FK to profiles and search indexes",
+          "acceptanceCriteria": [
+            "Table created with all columns",
+            "Foreign key constraint to profiles works",
+            "Unique constraint on user_id prevents duplicates",
+            "Composite search index created"
+          ],
+          "dependencies": ["2.2"],
+          "complexity": "High",
+          "passed": true
+        },
+        {
+          "id": "2.4",
+          "subject": "Create Posts and Comments Tables",
+          "description": "Create posts and comments tables for thread feed",
+          "source": "backend-plan.md",
+          "expectedOutput": "posts table with BIGINT IDENTITY PK, comments table with nested replies",
+          "acceptanceCriteria": [
+            "Posts table accepts inserts with auto-incrementing ID",
+            "Comments link to posts via foreign key",
+            "Nested comments work via parent_id",
+            "Cursor pagination index works"
+          ],
+          "dependencies": ["2.2"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.5",
+          "subject": "Create Likes, Bookmarks, Notifications Tables",
+          "description": "Create polymorphic likes/bookmarks and notifications tables",
+          "source": "backend-plan.md",
+          "expectedOutput": "likes, bookmarks, notifications tables with proper constraints",
+          "acceptanceCriteria": [
+            "Unique constraint prevents duplicate likes",
+            "Bookmarks display correctly per user",
+            "Notifications store all required metadata"
+          ],
+          "dependencies": ["2.4"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.6",
+          "subject": "Create Support Programs Table",
+          "description": "Create support_programs table for admin-curated programs",
+          "source": "backend-plan.md",
+          "expectedOutput": "support_programs table with deadline and search indexes",
+          "acceptanceCriteria": [
+            "Programs store all required fields",
+            "Deadline filtering works",
+            "Full-text search returns results"
+          ],
+          "dependencies": ["2.2"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.7",
+          "subject": "Create Collaboration Requests Table",
+          "description": "Create collaboration_requests table for expert matching",
+          "source": "backend-plan.md",
+          "expectedOutput": "collaboration_requests table with sender/recipient and status",
+          "acceptanceCriteria": [
+            "Requests store sender and recipient",
+            "Different parties constraint enforced",
+            "Status transitions work correctly"
+          ],
+          "dependencies": ["2.3"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.8",
+          "subject": "Create Database Triggers",
+          "description": "Create triggers for timestamps, like counts, comment counts, profile creation",
+          "source": "backend-plan.md",
+          "expectedOutput": "All trigger functions and triggers created",
+          "acceptanceCriteria": [
+            "updated_at auto-updates on row changes",
+            "like_count increments/decrements correctly",
+            "comment_count updates correctly",
+            "Profile created on auth.users insert"
+          ],
+          "dependencies": ["2.5"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.9",
+          "subject": "Enable RLS and Create Helper Functions",
+          "description": "Enable RLS on all tables and create is_admin, is_approved_member helpers",
+          "source": "backend-plan.md",
+          "expectedOutput": "RLS enabled, helper functions with SECURITY DEFINER",
+          "acceptanceCriteria": [
+            "Direct table queries fail without auth",
+            "Helper functions return correct values",
+            "Functions use SECURITY DEFINER with explicit search_path"
+          ],
+          "dependencies": ["2.8"],
+          "complexity": "High",
+          "passed": true
+        },
+        {
+          "id": "2.10",
+          "subject": "Create RLS Policies for All Tables",
+          "description": "Create SELECT, INSERT, UPDATE, DELETE policies for all tables",
+          "source": "backend-plan.md",
+          "expectedOutput": "Complete RLS policy coverage for all tables",
+          "acceptanceCriteria": [
+            "Non-approved users cannot view community content",
+            "Users can only edit their own content",
+            "Admins have elevated permissions",
+            "Hidden content invisible to regular users"
+          ],
+          "dependencies": ["2.9"],
+          "complexity": "High",
+          "passed": true
+        },
+        {
+          "id": "2.11",
+          "subject": "Create Storage Buckets",
+          "description": "Create storage buckets for avatars, post-media, expert-documents, portfolio, program-images",
+          "source": "backend-plan.md",
+          "expectedOutput": "All storage buckets with RLS policies",
+          "acceptanceCriteria": [
+            "Public buckets accessible without auth",
+            "Private buckets require owner or admin auth",
+            "Upload policies restrict by user folder"
+          ],
+          "dependencies": ["2.9"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.12",
+          "subject": "Implement Header Component (Desktop)",
+          "description": "Create fixed desktop header with logo, nav, user actions, and language switcher using customized wrappers and i18n",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/layouts/header.tsx using Button, Avatar from @/components/ui/, useTranslations, and LanguageSwitcher",
+          "acceptanceCriteria": [
+            "Header stays fixed on scroll",
+            "Navigation shows current route as active",
+            "Active indicator animates between items",
+            "Notification bell and profile avatar present",
+            "Uses customized Avatar component from @/components/ui/",
+            "Language switcher visible and functional",
+            "Navigation labels use translations from useTranslations('navigation')"
+          ],
+          "dependencies": ["1.6", "1.7", "1.10", "1.11", "1.21"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.13",
+          "subject": "Implement Bottom Navigation (Mobile)",
+          "description": "Create fixed bottom nav with 5 items, active state animations, and i18n support",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/layouts/bottom-nav.tsx using Button from @/components/ui/ and useTranslations",
+          "acceptanceCriteria": [
+            "Bottom nav visible only on mobile",
+            "Active tab scales up and shows glow",
+            "Top indicator line animates",
+            "Safe area respects iOS notch",
+            "Navigation labels use translations from useTranslations('navigation')"
+          ],
+          "dependencies": ["1.6", "1.18"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.14",
+          "subject": "Implement Dashboard Layout",
+          "description": "Create dashboard layout wrapper with header and bottom nav within [locale] segment",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/layout.tsx",
+          "acceptanceCriteria": [
+            "Content not obscured by fixed header",
+            "Content not obscured by bottom nav on mobile",
+            "Responsive padding adjustment",
+            "Layout works within [locale] segment"
+          ],
+          "dependencies": ["2.12", "2.13"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "2.15",
+          "subject": "Implement Auth Layout",
+          "description": "Create centered auth layout without navigation within [locale] segment",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(auth)/layout.tsx",
+          "acceptanceCriteria": [
+            "Auth pages centered vertically and horizontally",
+            "No header or bottom nav visible",
+            "Clean minimal appearance",
+            "Works within [locale] segment"
+          ],
+          "dependencies": ["1.3"],
+          "complexity": "Low",
+          "passed": true
+        },
+        {
+          "id": "2.16",
+          "subject": "Implement Login Form",
+          "description": "Create login form with Google OAuth and email/password using customized wrappers and translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/auth/components/login-form.tsx using Button, Input from @/components/ui/ and useTranslations('auth.login')",
+          "acceptanceCriteria": [
+            "Form validates email format",
+            "Form validates password minimum length",
+            "Google OAuth initiates redirect",
+            "Successful login redirects to /[locale]/home",
+            "Error messages display on failure in current locale",
+            "Uses customized Input and Button components",
+            "All labels and messages use translations"
+          ],
+          "dependencies": ["1.6", "1.8", "1.16", "1.20"],
+          "complexity": "Medium",
+          "passed": true
+        },
+        {
+          "id": "2.17",
+          "subject": "Implement Signup Form with Profile Setup",
+          "description": "Create multi-step signup with email verification, profile creation, and translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/auth/components/signup-form.tsx with OTP verification and useTranslations('auth.signup')",
+          "acceptanceCriteria": [
+            "User can sign up with email/password",
+            "User must enter name and company",
+            "OTP verification works",
+            "Profile created with pending status",
+            "All labels use translations"
+          ],
+          "dependencies": ["2.16"],
+          "complexity": "High",
+          "passed": true
+        },
+        {
+          "id": "2.18",
+          "subject": "Implement Auth Middleware",
+          "description": "Create Next.js middleware combining locale routing and route protection",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/middleware.ts with combined next-intl and Supabase auth middleware",
+          "acceptanceCriteria": [
+            "Unauthenticated users redirected from protected routes to /[locale]/login",
+            "Non-admin users redirected from /[locale]/admin routes",
+            "Auth pages redirect authenticated users to /[locale]/home",
+            "Locale routing continues to work alongside auth"
+          ],
+          "dependencies": ["1.16", "1.19"],
+          "complexity": "Medium",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Community Features (Thread Feed)",
+      "tasks": [
+        {
+          "id": "3.1",
+          "subject": "Implement Feed API Queries",
+          "description": "Create TanStack Query hooks for posts, comments, likes",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/community/api/queries.ts with all hooks",
+          "acceptanceCriteria": [
+            "Posts load with author info via JOIN",
+            "Infinite scroll loads more posts",
+            "Optimistic update for likes",
+            "Cache invalidation on new post"
+          ],
+          "dependencies": ["2.4", "2.10"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "3.2",
+          "subject": "Implement Post Card Component",
+          "description": "Create post card using customized Card, Avatar, Badge wrappers with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/community/components/post-card.tsx using @/components/ui/ wrappers and useTranslations('thread.post')",
+          "acceptanceCriteria": [
+            "Author name, company, avatar display correctly",
+            "Relative timestamp shows formatted for locale",
+            "Images render in grid",
+            "Like button toggles state",
+            "Card has hover animation",
+            "Uses Card, Avatar, Badge from @/components/ui/",
+            "Action labels (like, comment, share) use translations"
+          ],
+          "dependencies": ["1.6", "1.7", "1.10", "1.11", "3.1"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "3.3",
+          "subject": "Implement Post Composer",
+          "description": "Create post composer using customized Textarea, Button wrappers with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/community/components/post-composer.tsx using @/components/ui/ wrappers and useTranslations('thread.compose')",
+          "acceptanceCriteria": [
+            "Empty submit disabled",
+            "Character limit indicator (5000 chars max)",
+            "Image preview before submit",
+            "Success shows post in feed",
+            "Uses Textarea, Button from @/components/ui/",
+            "Placeholder and submit button use translations"
+          ],
+          "dependencies": ["1.6", "1.9", "3.1"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "3.4",
+          "subject": "Implement Comment List and Form",
+          "description": "Create comment display and nested reply support with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/community/components/comment-list.tsx, comment-form.tsx with useTranslations('thread.comments')",
+          "acceptanceCriteria": [
+            "Comments display chronologically",
+            "Reply button shows reply form",
+            "Nested comments indented",
+            "Like count on comments",
+            "Labels use translations"
+          ],
+          "dependencies": ["3.2"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "3.5",
+          "subject": "Implement Thread Feed Page",
+          "description": "Create thread feed page with composer and infinite scroll",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/thread/page.tsx",
+          "acceptanceCriteria": [
+            "Page loads with posts",
+            "Composer visible at top",
+            "Scroll triggers next page",
+            "Skeleton UI during loading",
+            "Page title and subtitle use translations"
+          ],
+          "dependencies": ["3.2", "3.3"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "3.6",
+          "subject": "Implement Post Detail Page",
+          "description": "Create post detail page with full content and comments",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/thread/[id]/page.tsx",
+          "acceptanceCriteria": [
+            "Post content fully visible",
+            "Comments load below post",
+            "Can add comment",
+            "Can navigate back to feed"
+          ],
+          "dependencies": ["3.2", "3.4"],
+          "complexity": "Medium",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Expert System (Search, Profiles, Matching)",
+      "tasks": [
+        {
+          "id": "4.1",
+          "subject": "Implement Expert Search API",
+          "description": "Create hooks for expert search with filters",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/experts/api/queries.ts",
+          "acceptanceCriteria": [
+            "Category filter works",
+            "Keyword search returns relevant results",
+            "Price range filter works",
+            "Multiple filters combine correctly"
+          ],
+          "dependencies": ["2.3", "2.10"],
+          "complexity": "High",
+          "passed": false
+        },
+        {
+          "id": "4.2",
+          "subject": "Implement Expert Card Component",
+          "description": "Create expert card using customized Card, Avatar, Badge wrappers with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/experts/components/expert-card.tsx using @/components/ui/ wrappers and useTranslations('experts.card')",
+          "acceptanceCriteria": [
+            "Card displays all expert info",
+            "Available experts show green indicator",
+            "Featured experts highlighted",
+            "Click navigates to profile",
+            "Uses Card, Avatar, Badge from @/components/ui/",
+            "Labels (verified, available) use translations"
+          ],
+          "dependencies": ["1.6", "1.7", "1.10", "1.11", "4.1"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "4.3",
+          "subject": "Implement Expert Grid with Filters",
+          "description": "Create expert grid layout with filter panel using customized wrappers and translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/experts/components/expert-grid.tsx, filter-panel.tsx using Select, Checkbox, Accordion and useTranslations('experts.filters')",
+          "acceptanceCriteria": [
+            "Grid responsive (1-4 columns)",
+            "Filters update results",
+            "Clear filters button works",
+            "Results count displayed",
+            "Uses Select, Checkbox, Accordion from @/components/ui/",
+            "Filter labels and category names use translations"
+          ],
+          "dependencies": ["4.2"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "4.4",
+          "subject": "Implement Expert Profile Header",
+          "description": "Create profile header using customized Avatar, Badge wrappers",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/experts/components/expert-profile-header.tsx using @/components/ui/ wrappers",
+          "acceptanceCriteria": [
+            "Glow background effect visible",
+            "Verified badge shows for approved",
+            "Stats grid animated on hover",
+            "Availability badge pulses",
+            "Uses Avatar, Badge from @/components/ui/"
+          ],
+          "dependencies": ["1.6", "1.7", "1.10", "1.11", "4.1"],
+          "complexity": "High",
+          "passed": false
+        },
+        {
+          "id": "4.5",
+          "subject": "Implement Expert Profile Sections",
+          "description": "Create expertise, collaboration needs, experience, portfolio sections using customized wrappers and translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "Profile section components using Badge, Tabs, Accordion from @/components/ui/ and useTranslations('experts.profile')",
+          "acceptanceCriteria": [
+            "Skills displayed as badges/chips",
+            "Collaboration needs in highlighted card",
+            "Timeline shows chronological experience",
+            "Portfolio links open in new tab",
+            "Uses Badge, Tabs, Accordion from @/components/ui/",
+            "Section labels use translations"
+          ],
+          "dependencies": ["4.4"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "4.6",
+          "subject": "Implement Collaboration Modal",
+          "description": "Create collaboration proposal modal using customized Dialog, Input, Textarea, Button with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/experts/components/collaboration-modal.tsx using @/components/ui/ wrappers and useTranslations",
+          "acceptanceCriteria": [
+            "Modal opens from CTA button",
+            "Form validates required fields",
+            "Submit creates collaboration request",
+            "Success message shown",
+            "Modal closes on success",
+            "Uses Dialog, Input, Textarea, Button from @/components/ui/",
+            "All text uses translations"
+          ],
+          "dependencies": ["1.6", "1.8", "1.12", "4.4"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "4.7",
+          "subject": "Implement Coffee Chat Modal",
+          "description": "Create simpler coffee chat request modal",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/experts/components/coffee-chat-modal.tsx",
+          "acceptanceCriteria": [
+            "Modal opens from secondary CTA",
+            "Simpler form than collaboration",
+            "Creates request with type coffee_chat"
+          ],
+          "dependencies": ["4.6"],
+          "complexity": "Low",
+          "passed": false
+        },
+        {
+          "id": "4.8",
+          "subject": "Implement Expert Profile Page",
+          "description": "Create full expert profile page with all sections",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/experts/[id]/page.tsx",
+          "acceptanceCriteria": [
+            "All profile sections load",
+            "Sticky CTA bar visible",
+            "Both CTA buttons work",
+            "Back navigation works"
+          ],
+          "dependencies": ["4.4", "4.5", "4.6", "4.7"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "4.9",
+          "subject": "Implement Expert Search Page",
+          "description": "Create expert search page with grid, filters, and translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/experts/page.tsx with useTranslations('experts')",
+          "acceptanceCriteria": [
+            "Search input works",
+            "Filters visible and functional",
+            "Grid displays results",
+            "Empty state shows for no results with translated message"
+          ],
+          "dependencies": ["4.3"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "4.10",
+          "subject": "Implement Expert Registration Form",
+          "description": "Create expert registration using customized Form, Input, Select, Progress, Alert with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/expert-registration/page.tsx with form components using @/components/ui/ and useTranslations('experts.registration')",
+          "acceptanceCriteria": [
+            "Form validates all required fields",
+            "Business registration number format validated",
+            "Documents upload to storage",
+            "Submission sets status to pending_review",
+            "Uses Form, Input, Select, Progress, Alert from @/components/ui/",
+            "All labels use translations"
+          ],
+          "dependencies": ["2.3", "2.11"],
+          "complexity": "High",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Support Programs and Dashboard",
+      "tasks": [
+        {
+          "id": "5.1",
+          "subject": "Implement Support Programs API",
+          "description": "Create hooks for programs with category and deadline filters",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/support-programs/api/queries.ts",
+          "acceptanceCriteria": [
+            "Programs load with published status",
+            "Category filter works",
+            "Deadline filter shows upcoming",
+            "Full-text search works"
+          ],
+          "dependencies": ["2.6", "2.10"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "5.2",
+          "subject": "Implement Program Card Component",
+          "description": "Create program card using customized Card, Badge wrappers with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/support-programs/components/program-card.tsx using @/components/ui/ and useTranslations('supportPrograms.card')",
+          "acceptanceCriteria": [
+            "Card width fixed for horizontal scroll",
+            "Deadline shows days remaining",
+            "Deadline badge orange when urgent",
+            "Card clickable for detail",
+            "Uses Card, Badge from @/components/ui/",
+            "Labels use translations"
+          ],
+          "dependencies": ["1.6", "1.7", "1.10"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "5.3",
+          "subject": "Implement Program Carousel",
+          "description": "Create horizontal scroll carousel using customized Carousel, Tabs wrappers",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/support-programs/components/program-carousel.tsx using @/components/ui/ wrappers",
+          "acceptanceCriteria": [
+            "Cards scroll horizontally",
+            "Category filter updates cards",
+            "Touch swipe works on mobile",
+            "Scroll snap optional",
+            "Uses Carousel, Tabs from @/components/ui/"
+          ],
+          "dependencies": ["5.2"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "5.4",
+          "subject": "Implement Program Detail Modal",
+          "description": "Create program detail modal using customized Dialog wrapper with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/features/support-programs/components/program-detail-modal.tsx using Dialog and useTranslations('supportPrograms.detail')",
+          "acceptanceCriteria": [
+            "Modal shows all program details",
+            "External URL opens in new tab",
+            "Bookmark saves program",
+            "Close button works",
+            "Uses Dialog from @/components/ui/",
+            "Section labels use translations"
+          ],
+          "dependencies": ["5.2", "1.12"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "5.5",
+          "subject": "Implement Support Programs Page",
+          "description": "Create support programs listing page with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/support-programs/page.tsx with useTranslations('supportPrograms')",
+          "acceptanceCriteria": [
+            "Page loads programs",
+            "Filters work correctly",
+            "Cards open detail modal",
+            "Responsive layout",
+            "Page title uses translations"
+          ],
+          "dependencies": ["5.3", "5.4"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "5.6",
+          "subject": "Implement Home Dashboard Page",
+          "description": "Create home dashboard using customized Card, Carousel, Scroll-area wrappers with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/home/page.tsx using @/components/ui/ and useTranslations('home')",
+          "acceptanceCriteria": [
+            "Welcome shows user name with translation interpolation",
+            "Thread preview shows recent posts",
+            "Horizontal scroll for articles",
+            "Quick nav cards lead to sections",
+            "Staggered animation on load",
+            "Uses Card, Carousel, Scroll-area from @/components/ui/",
+            "All section titles use translations"
+          ],
+          "dependencies": ["3.2", "5.2", "1.20"],
+          "complexity": "High",
+          "passed": false
+        },
+        {
+          "id": "5.7",
+          "subject": "Implement Profile Page",
+          "description": "Create user profile page using customized Avatar, Badge, Progress, Accordion wrappers with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(dashboard)/profile/page.tsx using @/components/ui/ and useTranslations('profile')",
+          "acceptanceCriteria": [
+            "Completeness percentage calculated",
+            "All sections editable",
+            "Changes persist to database",
+            "Profile photo uploadable",
+            "Uses Avatar, Badge, Progress, Accordion from @/components/ui/",
+            "All labels use translations"
+          ],
+          "dependencies": ["4.4", "1.20"],
+          "complexity": "High",
+          "passed": false
+        },
+        {
+          "id": "5.8",
+          "subject": "Implement Profile Edit Forms",
+          "description": "Create edit forms using customized Form, Input, Select, Dialog wrappers",
+          "source": "frontend-plan.md",
+          "expectedOutput": "Profile edit components using @/components/ui/ wrappers",
+          "acceptanceCriteria": [
+            "Each section has edit button",
+            "Edit mode shows form",
+            "Validation prevents invalid data",
+            "Save updates database",
+            "Uses Form, Input, Select, Dialog from @/components/ui/"
+          ],
+          "dependencies": ["5.7"],
+          "complexity": "Medium",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "phase-6",
+      "name": "Admin Zone",
+      "tasks": [
+        {
+          "id": "6.1",
+          "subject": "Implement Admin Layout",
+          "description": "Create admin layout with sidebar navigation and translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(admin)/admin/layout.tsx with useTranslations('admin')",
+          "acceptanceCriteria": [
+            "Only admins can access",
+            "Sidebar shows admin sections",
+            "Different visual treatment",
+            "Navigation labels use translations"
+          ],
+          "dependencies": ["2.18"],
+          "complexity": "Low",
+          "passed": false
+        },
+        {
+          "id": "6.2",
+          "subject": "Implement Member Approval List",
+          "description": "Create pending member list using customized Table wrapper with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(admin)/admin/members/page.tsx using Table and useTranslations('admin.members')",
+          "acceptanceCriteria": [
+            "Pending members displayed",
+            "Approve button changes status",
+            "Reject button requires reason",
+            "User notified on status change",
+            "Uses Table from @/components/ui/",
+            "Labels use translations"
+          ],
+          "dependencies": ["6.1"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "6.3",
+          "subject": "Implement Expert Verification",
+          "description": "Create expert verification workflow using customized Table, Dialog wrappers with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(admin)/admin/experts/page.tsx using Table, Dialog and useTranslations('admin.experts')",
+          "acceptanceCriteria": [
+            "Pending experts listed",
+            "Documents viewable",
+            "Approval changes expert status",
+            "Expert notified",
+            "Uses Table, Dialog from @/components/ui/",
+            "Labels use translations"
+          ],
+          "dependencies": ["6.1"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "6.4",
+          "subject": "Implement Content Management",
+          "description": "Create support program CRUD and community moderation using customized Table, Dropdown-menu with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/app/[locale]/(admin)/admin/content/page.tsx using Table, Dropdown-menu and useTranslations('admin.content')",
+          "acceptanceCriteria": [
+            "Can create support program",
+            "Can edit existing programs",
+            "Can hide/delete community posts",
+            "Can pin posts",
+            "Uses Table, Dropdown-menu from @/components/ui/",
+            "Labels use translations"
+          ],
+          "dependencies": ["6.1"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "6.5",
+          "subject": "Implement Edge Functions for Admin Actions",
+          "description": "Create Supabase Edge Functions for member/expert approval",
+          "source": "backend-plan.md",
+          "expectedOutput": "supabase/functions/approve-member/, send-notification/",
+          "acceptanceCriteria": [
+            "Functions verify admin role",
+            "Member approval updates profile",
+            "Notification sent to user",
+            "Audit trail maintained"
+          ],
+          "dependencies": ["6.2", "6.3"],
+          "complexity": "Medium",
+          "passed": false
+        }
+      ]
+    },
+    {
+      "id": "phase-7",
+      "name": "Polish and Testing",
+      "tasks": [
+        {
+          "id": "7.1",
+          "subject": "Implement Loading Skeletons",
+          "description": "Create skeleton components using customized Skeleton wrapper",
+          "source": "frontend-plan.md",
+          "expectedOutput": "Skeleton components using Skeleton from @/components/ui/",
+          "acceptanceCriteria": [
+            "Skeletons match component dimensions",
+            "Shimmer animation visible",
+            "Replace with content on load",
+            "Uses Skeleton from @/components/ui/"
+          ],
+          "dependencies": ["1.13"],
+          "complexity": "Low",
+          "passed": false
+        },
+        {
+          "id": "7.2",
+          "subject": "Implement Error Boundaries",
+          "description": "Create error boundaries with retry functionality and translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/common/error-boundary.tsx with useTranslations('errors')",
+          "acceptanceCriteria": [
+            "Errors caught and displayed",
+            "Retry button attempts reload",
+            "User-friendly error messages in current locale"
+          ],
+          "dependencies": [],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "7.3",
+          "subject": "Implement Empty States",
+          "description": "Create empty state components for various scenarios with translations",
+          "source": "frontend-plan.md",
+          "expectedOutput": "src/components/common/empty-state.tsx with useTranslations",
+          "acceptanceCriteria": [
+            "Friendly message displayed in current locale",
+            "Illustration or icon present",
+            "Action suggestion provided"
+          ],
+          "dependencies": [],
+          "complexity": "Low",
+          "passed": false
+        },
+        {
+          "id": "7.4",
+          "subject": "Implement Toast Notifications",
+          "description": "Create toast notification system using customized Sonner wrapper",
+          "source": "frontend-plan.md",
+          "expectedOutput": "Toast notifications using Sonner from @/components/ui/",
+          "acceptanceCriteria": [
+            "Toast appears on action",
+            "Auto-dismiss after delay",
+            "Dismiss button works",
+            "Accessible announcements",
+            "Uses Sonner from @/components/ui/"
+          ],
+          "dependencies": ["1.13"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "7.5",
+          "subject": "Implement Real-time Subscriptions",
+          "description": "Setup Supabase realtime for posts and notifications",
+          "source": "backend-plan.md",
+          "expectedOutput": "Real-time hooks for post updates and notification counts",
+          "acceptanceCriteria": [
+            "New posts appear without refresh",
+            "Notification count updates live",
+            "Reconnection on disconnect"
+          ],
+          "dependencies": [],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "7.6",
+          "subject": "Accessibility Audit",
+          "description": "Ensure WCAG 2.1 AA compliance across application",
+          "source": "ui-ux-plan.md",
+          "expectedOutput": "Skip link, focus management, ARIA labels, contrast verification",
+          "acceptanceCriteria": [
+            "WCAG 2.1 AA compliance",
+            "Keyboard navigation complete",
+            "Screen reader tested",
+            "Focus indicators visible"
+          ],
+          "dependencies": [],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "7.7",
+          "subject": "Performance Optimization",
+          "description": "Optimize bundle size, implement dynamic imports, image optimization",
+          "source": "frontend-plan.md",
+          "expectedOutput": "Bundle analysis, dynamic imports, optimized images",
+          "acceptanceCriteria": [
+            "Initial bundle < 200KB",
+            "LCP < 2.5s",
+            "CLS < 0.1",
+            "No duplicate network requests"
+          ],
+          "dependencies": [],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "7.8",
+          "subject": "Write Unit Tests for Core Features",
+          "description": "Create unit tests with Vitest and Testing Library",
+          "source": "frontend-plan.md",
+          "expectedOutput": "Test files for auth, forms, key components; >70% coverage",
+          "acceptanceCriteria": [
+            "All tests pass",
+            "Critical paths covered",
+            "Mocks properly configured",
+            "CI pipeline runs tests"
+          ],
+          "dependencies": [],
+          "complexity": "High",
+          "passed": false
+        },
+        {
+          "id": "7.9",
+          "subject": "Write E2E Tests for Critical Flows",
+          "description": "Create Playwright E2E tests for critical user journeys",
+          "source": "frontend-plan.md",
+          "expectedOutput": "E2E tests for signup, post creation, expert search, admin approval",
+          "acceptanceCriteria": [
+            "Tests run in CI",
+            "All critical paths tested",
+            "Tests reliable (no flakes)"
+          ],
+          "dependencies": ["7.8"],
+          "complexity": "High",
+          "passed": false
+        },
+        {
+          "id": "7.10",
+          "subject": "Complete Translation Review and Quality Check",
+          "description": "Verify all translations across application for both locales",
+          "source": "frontend-plan.md",
+          "priority": "high",
+          "expectedOutput": [
+            "All translation keys verified across application",
+            "Korean translations reviewed by native speaker",
+            "English translations verified for grammar",
+            "Missing translations identified and added"
+          ],
+          "acceptanceCriteria": [
+            "No missing translation keys (no fallback text visible)",
+            "Korean uses natural, native expressions",
+            "English is grammatically correct",
+            "All interpolations work correctly ({name}, {count}, etc.)",
+            "Date/number formatting correct for each locale"
+          ],
+          "stepsToReproduce": [
+            "Switch to Korean, navigate all pages - verify no English fallback",
+            "Switch to English, navigate all pages - verify no Korean fallback",
+            "Test pages with dynamic content (usernames, counts)",
+            "Verify date formatting matches locale conventions"
+          ],
+          "dependencies": ["1.20"],
+          "complexity": "Medium",
+          "passed": false
+        },
+        {
+          "id": "7.11",
+          "subject": "Final Integration Testing",
+          "description": "Complete app walkthrough and bug fixes including i18n verification",
+          "source": "All plans",
+          "expectedOutput": "Full app functional with no critical bugs, i18n working across all features",
+          "acceptanceCriteria": [
+            "User can sign up and get approved",
+            "User can browse and create posts",
+            "User can search and contact experts",
+            "Admin can manage members and content",
+            "Language switching works everywhere",
+            "All content displays in selected language"
+          ],
+          "dependencies": [],
+          "complexity": "High",
+          "passed": false
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalTasks": 81,
+    "passed": 41,
+    "failed": 0,
+    "pending": 40,
+    "byPriority": {
+      "critical": 16,
+      "high": 34,
+      "medium": 31,
+      "low": 0
+    },
+    "byPhase": {
+      "phase-1": 23,
+      "phase-2": 18,
+      "phase-3": 6,
+      "phase-4": 10,
+      "phase-5": 8,
+      "phase-6": 5,
+      "phase-7": 11
+    }
+  },
+  "i18nTasks": {
+    "description": "Tasks specifically for internationalization setup",
+    "tasks": [
+      "1.18 - Setup next-intl Configuration",
+      "1.19 - Create Middleware for Locale Routing",
+      "1.20 - Create Translation Files (Korean + English)",
+      "1.21 - Create Language Switcher Component",
+      "1.22 - Update Root Layout with NextIntlClientProvider",
+      "1.23 - Update Header and Bottom Nav with i18n",
+      "7.10 - Complete Translation Review and Quality Check"
+    ]
+  },
+  "componentDependencies": {
+    "description": "All feature components depend on these customized wrappers being complete",
+    "mappings": {
+      "Auth": ["Button", "Input", "Form"],
+      "Community/Thread": ["Button", "Card", "Avatar", "Badge", "Textarea", "Skeleton"],
+      "Experts": ["Button", "Card", "Avatar", "Badge", "Dialog", "Select", "Tabs", "Accordion"],
+      "Support Programs": ["Button", "Card", "Badge", "Carousel", "Dialog", "Tabs"],
+      "Profile": ["Button", "Card", "Avatar", "Badge", "Progress", "Accordion", "Form"],
+      "Admin": ["Button", "Table", "Dialog", "Dropdown-menu"]
+    },
+    "i18nIntegration": {
+      "Auth": "useTranslations('auth')",
+      "Community/Thread": "useTranslations('thread')",
+      "Experts": "useTranslations('experts')",
+      "Support Programs": "useTranslations('supportPrograms')",
+      "Profile": "useTranslations('profile')",
+      "Admin": "useTranslations('admin')"
+    }
+  }
+}
