@@ -16,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { LanguageSwitcher } from '@/components/common/language-switcher';
+import { useRealtimeNotifications } from '@/hooks/use-realtime-notifications';
 
 /**
  * Header Component - Desktop Navigation
@@ -52,6 +53,9 @@ export function Header() {
 
   // Track which nav item is hovered for potential future hover effects
   const [, setHoveredItem] = React.useState<string | null>(null);
+
+  // Real-time notification count
+  const { unreadCount } = useRealtimeNotifications();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-16 bg-black/95 backdrop-blur-md border-b border-white/8">
@@ -114,12 +118,12 @@ export function Header() {
             aria-label={t('notifications')}
           >
             <Bell className="h-5 w-5" />
-            {/* Notification badge - can be conditionally rendered based on notification count */}
-            {/*
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#FF453A] rounded-full text-[10px] font-bold flex items-center justify-center text-white">
-              3
-            </span>
-            */}
+            {/* Notification badge - shows unread count from realtime subscription */}
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#FF453A] rounded-full text-[10px] font-bold flex items-center justify-center text-white">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </Button>
 
           {/* Profile Avatar Dropdown */}

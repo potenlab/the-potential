@@ -848,7 +848,7 @@
           ],
           "dependencies": ["2.4", "2.10"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "3.2",
@@ -867,7 +867,7 @@
           ],
           "dependencies": ["1.6", "1.7", "1.10", "1.11", "3.1"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "3.3",
@@ -885,7 +885,7 @@
           ],
           "dependencies": ["1.6", "1.9", "3.1"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "3.4",
@@ -902,7 +902,7 @@
           ],
           "dependencies": ["3.2"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "3.5",
@@ -919,7 +919,7 @@
           ],
           "dependencies": ["3.2", "3.3"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "3.6",
@@ -935,7 +935,7 @@
           ],
           "dependencies": ["3.2", "3.4"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -957,7 +957,7 @@
           ],
           "dependencies": ["2.3", "2.10"],
           "complexity": "High",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.2",
@@ -975,7 +975,7 @@
           ],
           "dependencies": ["1.6", "1.7", "1.10", "1.11", "4.1"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.3",
@@ -993,7 +993,7 @@
           ],
           "dependencies": ["4.2"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.4",
@@ -1010,7 +1010,7 @@
           ],
           "dependencies": ["1.6", "1.7", "1.10", "1.11", "4.1"],
           "complexity": "High",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.5",
@@ -1028,7 +1028,7 @@
           ],
           "dependencies": ["4.4"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.6",
@@ -1047,7 +1047,7 @@
           ],
           "dependencies": ["1.6", "1.8", "1.12", "4.4"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.7",
@@ -1062,7 +1062,7 @@
           ],
           "dependencies": ["4.6"],
           "complexity": "Low",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.8",
@@ -1078,7 +1078,7 @@
           ],
           "dependencies": ["4.4", "4.5", "4.6", "4.7"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.9",
@@ -1094,7 +1094,7 @@
           ],
           "dependencies": ["4.3"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "4.10",
@@ -1112,7 +1112,7 @@
           ],
           "dependencies": ["2.3", "2.11"],
           "complexity": "High",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -1134,7 +1134,7 @@
           ],
           "dependencies": ["2.6", "2.10"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "5.2",
@@ -1152,7 +1152,7 @@
           ],
           "dependencies": ["1.6", "1.7", "1.10"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "5.3",
@@ -1169,7 +1169,7 @@
           ],
           "dependencies": ["5.2"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "5.4",
@@ -1187,7 +1187,7 @@
           ],
           "dependencies": ["5.2", "1.12"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "5.5",
@@ -1204,7 +1204,7 @@
           ],
           "dependencies": ["5.3", "5.4"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "5.6",
@@ -1223,7 +1223,7 @@
           ],
           "dependencies": ["3.2", "5.2", "1.20"],
           "complexity": "High",
-          "passed": false
+          "passed": true
         },
         {
           "id": "5.7",
@@ -1241,7 +1241,7 @@
           ],
           "dependencies": ["4.4", "1.20"],
           "complexity": "High",
-          "passed": false
+          "passed": true
         },
         {
           "id": "5.8",
@@ -1258,7 +1258,7 @@
           ],
           "dependencies": ["5.7"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -1280,7 +1280,7 @@
           ],
           "dependencies": ["2.18"],
           "complexity": "Low",
-          "passed": false
+          "passed": true
         },
         {
           "id": "6.2",
@@ -1298,7 +1298,7 @@
           ],
           "dependencies": ["6.1"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "6.3",
@@ -1316,7 +1316,7 @@
           ],
           "dependencies": ["6.1"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "6.4",
@@ -1334,7 +1334,7 @@
           ],
           "dependencies": ["6.1"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "6.5",
@@ -1350,7 +1350,7 @@
           ],
           "dependencies": ["6.2", "6.3"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         }
       ]
     },
@@ -1372,7 +1372,7 @@
           ],
           "dependencies": ["1.13"],
           "complexity": "Low",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.2",
@@ -1387,7 +1387,7 @@
           ],
           "dependencies": [],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.3",
@@ -1402,7 +1402,7 @@
           ],
           "dependencies": [],
           "complexity": "Low",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.4",
@@ -1419,7 +1419,7 @@
           ],
           "dependencies": ["1.13"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.5",
@@ -1434,7 +1434,7 @@
           ],
           "dependencies": [],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.6",
@@ -1450,7 +1450,7 @@
           ],
           "dependencies": [],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.7",
@@ -1466,7 +1466,7 @@
           ],
           "dependencies": [],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.8",
@@ -1482,7 +1482,7 @@
           ],
           "dependencies": [],
           "complexity": "High",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.9",
@@ -1497,7 +1497,7 @@
           ],
           "dependencies": ["7.8"],
           "complexity": "High",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.10",
@@ -1526,7 +1526,7 @@
           ],
           "dependencies": ["1.20"],
           "complexity": "Medium",
-          "passed": false
+          "passed": true
         },
         {
           "id": "7.11",
@@ -1544,16 +1544,16 @@
           ],
           "dependencies": [],
           "complexity": "High",
-          "passed": false
+          "passed": true
         }
       ]
     }
   ],
   "summary": {
     "totalTasks": 81,
-    "passed": 41,
+    "passed": 81,
     "failed": 0,
-    "pending": 40,
+    "pending": 0,
     "byPriority": {
       "critical": 16,
       "high": 34,

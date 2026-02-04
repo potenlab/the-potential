@@ -217,7 +217,8 @@
       "growth": "Growth",
       "data": "Data",
       "ai": "AI/ML",
-      "blockchain": "Blockchain"
+      "blockchain": "Blockchain",
+      "other": "Other"
     },
     "regions": {
       "all": "All Regions",
@@ -265,7 +266,41 @@
       "report": "Report",
       "noReviews": "No reviews yet",
       "allReviews": "View All Reviews",
-      "collaborationNeeds": "Collaboration Needs"
+      "collaborationNeeds": "Collaboration Needs",
+      "expertiseSection": {
+        "title": "Expertise",
+        "category": "Category",
+        "expertiseAreas": "Expertise Areas",
+        "yearsExperience": "{years} years experience",
+        "noExpertise": "No expertise areas listed"
+      },
+      "collaborationSection": {
+        "title": "Collaboration Needs",
+        "lookingFor": "Looking For",
+        "noNeeds": "No collaboration needs listed",
+        "contactToDiscuss": "Contact to discuss collaboration opportunities"
+      },
+      "experienceSection": {
+        "title": "Experience & Education",
+        "workExperience": "Work Experience",
+        "education": "Education",
+        "present": "Present",
+        "noExperience": "No work experience listed",
+        "noEducation": "No education listed",
+        "yearsAt": "{years} years at {company}"
+      },
+      "portfolioSection": {
+        "title": "Portfolio",
+        "projects": "Projects",
+        "links": "Links",
+        "files": "Files",
+        "viewProject": "View Project",
+        "openLink": "Open Link",
+        "downloadFile": "Download File",
+        "noPortfolio": "No portfolio items listed",
+        "viewAll": "View All",
+        "externalLink": "Opens in new tab"
+      }
     },
     "collaboration": {
       "title": "Propose Collaboration",
@@ -273,11 +308,17 @@
       "projectTitle": "Project Title",
       "projectTitlePlaceholder": "Enter your project title",
       "description": "Project Description",
-      "descriptionPlaceholder": "Describe your project in detail",
+      "descriptionPlaceholder": "Describe your project in detail (min 50 characters)",
       "budget": "Estimated Budget",
       "budgetPlaceholder": "Enter your estimated budget",
       "timeline": "Expected Timeline",
       "timelinePlaceholder": "Enter expected timeline",
+      "contactPreference": "Preferred Contact Method",
+      "contactOptions": {
+        "email": "Email",
+        "phone": "Phone",
+        "messaging": "Messaging"
+      },
       "submit": "Send Proposal",
       "success": "Collaboration proposal sent successfully",
       "failed": "Failed to send collaboration proposal"
@@ -291,6 +332,17 @@
       "preferredTimePlaceholder": "Let us know your preferred time",
       "message": "Brief Introduction",
       "messagePlaceholder": "Introduce yourself briefly",
+      "meetingFormat": "Meeting Format",
+      "formatOptions": {
+        "videoCall": "Video Call",
+        "phone": "Phone Call",
+        "inPerson": "In Person"
+      },
+      "timeOptions": {
+        "morning": "Morning (9AM - 12PM)",
+        "afternoon": "Afternoon (12PM - 6PM)",
+        "evening": "Evening (6PM - 9PM)"
+      },
       "submit": "Send Request",
       "success": "Coffee chat request sent successfully",
       "failed": "Failed to send coffee chat request"
@@ -301,10 +353,29 @@
       "title": "Expert Registration",
       "subtitle": "Register as an expert and connect with founders",
       "step": "Step {current}/{total}",
+      "steps": {
+        "basicInfo": "Basic Information",
+        "businessInfo": "Business Information",
+        "portfolioInfo": "Portfolio & Documents",
+        "review": "Review & Submit"
+      },
       "basicInfo": "Basic Information",
       "expertiseInfo": "Expertise",
       "portfolioInfo": "Portfolio",
       "verification": "Verification",
+      "category": "Category",
+      "categoryPlaceholder": "Select your specialty",
+      "expertiseAreas": "Expertise Areas",
+      "expertiseAreasPlaceholder": "Enter expertise areas (comma separated)",
+      "expertiseAreasHelp": "e.g., Performance Marketing, Social Media, Brand Marketing",
+      "experienceYears": "Years of Experience",
+      "experienceYearsPlaceholder": "Enter years of experience",
+      "hourlyRate": "Hourly Rate (KRW)",
+      "hourlyRatePlaceholder": "Enter hourly rate (optional)",
+      "bio": "Bio",
+      "bioPlaceholder": "Introduce yourself as an expert, your experience and strengths",
+      "collaborationNeeds": "Collaboration Needs",
+      "collaborationNeedsPlaceholder": "Describe what kind of collaboration you are looking for",
       "companyName": "Company Name",
       "companyPlaceholder": "Enter your company name",
       "specialty": "Specialty",
@@ -313,13 +384,36 @@
       "introductionPlaceholder": "Write your introduction",
       "portfolio": "Portfolio",
       "portfolioPlaceholder": "Enter your portfolio URL",
+      "portfolioUrls": "Portfolio URLs",
+      "portfolioUrlsPlaceholder": "Enter portfolio URL",
+      "addPortfolioUrl": "Add URL",
+      "removePortfolioUrl": "Remove URL",
+      "businessName": "Business Name",
+      "businessNamePlaceholder": "Enter your business name",
       "businessNumber": "Business Registration Number",
       "businessNumberPlaceholder": "000-00-00000",
+      "businessNumberHelp": "Please include hyphens",
+      "businessCertificate": "Business Registration Certificate",
+      "businessCertificateDescription": "Upload a copy of your business registration certificate",
+      "portfolioFiles": "Portfolio Files",
+      "portfolioFilesDescription": "Upload portfolio files (PDF, images)",
       "documents": "Supporting Documents",
       "documentsDescription": "Upload business registration, certificates, or other verification documents",
       "uploadDocuments": "Upload Documents",
+      "uploadFile": "Upload File",
+      "uploadedFiles": "Uploaded Files",
+      "removeFile": "Remove File",
+      "fileTypeError": "File type not supported",
+      "fileSizeError": "File size cannot exceed 10MB",
+      "reviewTitle": "Review Application",
+      "reviewDescription": "Please review your information before submitting",
+      "editSection": "Edit",
+      "termsAgreement": "I agree to the Expert Service Terms of Use",
+      "termsRequired": "You must agree to the terms of use",
       "submit": "Submit Application",
       "submitDescription": "Your application will be reviewed by our team",
+      "submitSuccess": "Expert registration submitted successfully",
+      "submitFailed": "Failed to submit registration. Please try again.",
       "pending": "Under Review",
       "pendingDescription": "Our team is reviewing your application",
       "approved": "Approved",
@@ -382,7 +476,11 @@
       "viewReplies": "View {count} replies",
       "hideReplies": "Hide replies",
       "loadMore": "Load more comments",
-      "deleted": "This comment has been deleted"
+      "deleted": "This comment has been deleted",
+      "cancelReply": "Cancel",
+      "like": "Like",
+      "liked": "Unlike",
+      "delete": "Delete"
     },
     "empty": "No posts yet. Be the first to share something!",
     "loading": "Loading posts...",
@@ -402,6 +500,12 @@
     "search": "Search Programs",
     "searchPlaceholder": "Search by program name or organization",
     "resultsCount": "{count} programs found",
+    "viewAll": "View All Programs",
+    "filters": {
+      "title": "Filters",
+      "reset": "Reset Filters",
+      "apply": "Apply"
+    },
     "categories": {
       "all": "All",
       "funding": "Funding",
@@ -412,7 +516,8 @@
       "marketing": "Marketing Support",
       "global": "Global Expansion",
       "rd": "R&D",
-      "hiring": "Hiring Support"
+      "hiring": "Hiring Support",
+      "other": "Other"
     },
     "status": {
       "all": "All",
@@ -634,6 +739,7 @@
       "reject": "Reject",
       "viewDocuments": "View Documents",
       "viewProfile": "View Profile",
+      "searchPlaceholder": "Search by name, business...",
       "verifyConfirm": "Are you sure you want to approve this expert?",
       "rejectConfirm": "Are you sure you want to reject this expert?",
       "rejectReason": "Rejection Reason",
