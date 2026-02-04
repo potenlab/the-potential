@@ -1,0 +1,168 @@
+/* React Quill Dark Theme for The Potential */
+
+.ckeditor-dark-theme .ql-toolbar {
+  background-color: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px 16px 0 0;
+  padding: 12px;
+}
+
+.ckeditor-dark-theme .ql-container {
+  background-color: #0D0D0D;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+  border-radius: 0 0 16px 16px;
+  font-family: inherit;
+  min-height: 200px;
+}
+
+.ckeditor-dark-theme .ql-editor {
+  color: #FFFFFF;
+  min-height: 200px;
+  padding: 16px;
+}
+
+.ckeditor-dark-theme .ql-editor.ql-blank::before {
+  color: rgba(255, 255, 255, 0.4);
+  font-style: normal;
+}
+
+.ckeditor-dark-theme .ql-stroke {
+  stroke: rgba(255, 255, 255, 0.7);
+}
+
+.ckeditor-dark-theme .ql-fill {
+  fill: rgba(255, 255, 255, 0.7);
+}
+
+.ckeditor-dark-theme .ql-picker-label {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.ckeditor-dark-theme .ql-picker-options {
+  background-color: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.ckeditor-dark-theme .ql-picker-item {
+  color: #FFFFFF;
+}
+
+.ckeditor-dark-theme .ql-picker-item:hover {
+  background-color: rgba(0, 229, 255, 0.1);
+  color: #00E5FF;
+}
+
+.ckeditor-dark-theme button:hover .ql-stroke {
+  stroke: #00E5FF;
+}
+
+.ckeditor-dark-theme button:hover .ql-fill {
+  fill: #00E5FF;
+}
+
+.ckeditor-dark-theme button.ql-active .ql-stroke {
+  stroke: #00E5FF;
+}
+
+.ckeditor-dark-theme button.ql-active .ql-fill {
+  fill: #00E5FF;
+}
+
+.ckeditor-dark-theme .ql-toolbar button {
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.ckeditor-dark-theme .ql-toolbar button:hover {
+  background-color: rgba(0, 229, 255, 0.1);
+}
+
+.ckeditor-dark-theme .ql-toolbar button.ql-active {
+  background-color: rgba(0, 229, 255, 0.2);
+}
+
+/* Content styles */
+.ckeditor-dark-theme .ql-editor h1,
+.ckeditor-dark-theme .ql-editor h2,
+.ckeditor-dark-theme .ql-editor h3,
+.ckeditor-dark-theme .ql-editor h4,
+.ckeditor-dark-theme .ql-editor h5,
+.ckeditor-dark-theme .ql-editor h6 {
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.ckeditor-dark-theme .ql-editor a {
+  color: #00E5FF;
+  text-decoration: underline;
+}
+
+.ckeditor-dark-theme .ql-editor blockquote {
+  border-left: 4px solid #00E5FF;
+  color: rgba(255, 255, 255, 0.7);
+  padding-left: 16px;
+  margin: 16px 0;
+}
+
+.ckeditor-dark-theme .ql-editor code {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #00E5FF;
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.ckeditor-dark-theme .ql-editor pre {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.ckeditor-dark-theme .ql-editor ul,
+.ckeditor-dark-theme .ql-editor ol {
+  color: #FFFFFF;
+}
+
+/* Snow theme specific dark mode overrides */
+.ckeditor-dark-theme .ql-snow .ql-tooltip {
+  background-color: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  color: #FFFFFF;
+}
+
+.ckeditor-dark-theme .ql-snow .ql-tooltip input {
+  background-color: #0D0D0D;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.ckeditor-dark-theme .ql-snow .ql-tooltip input:focus {
+  border-color: #00E5FF;
+  outline: none;
+}
+
+.ckeditor-dark-theme .ql-snow .ql-tooltip a {
+  color: #00E5FF;
+}
+
+.ckeditor-dark-theme .ql-snow .ql-tooltip button {
+  background-color: #00E5FF;
+  color: #000000;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.ckeditor-dark-theme .ql-snow .ql-tooltip button:hover {
+  background-color: rgba(0, 229, 255, 0.8);
+}

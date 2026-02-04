@@ -1,0 +1,228 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Font Settings */
+  --font-size: 16px;
+  --font-family: 'Pretendard Variable', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  
+  /* Toss Dark Electric Theme - Pure Black Base */
+  --background: #000000;
+  --foreground: #FFFFFF;
+  
+  /* Layered Gray System - Toss Style Depth */
+  --layer-0: #000000; /* Pure Black - 배경 */
+  --layer-1: #0A0A0A; /* Almost Black - 기본 카드 */
+  --layer-2: #121212; /* Dark Gray - 카드 내부 */
+  --layer-3: #1A1A1A; /* Medium Dark Gray - 강조 영역 */
+  --layer-4: #222222; /* Lighter Dark Gray - 최상위 */
+  
+  /* Cards & Surfaces */
+  --card: #0A0A0A;
+  --card-foreground: #FFFFFF;
+  --card-secondary: #121212;
+  --card-tertiary: #1A1A1A;
+  
+  /* Popover */
+  --popover: #121212;
+  --popover-foreground: #FFFFFF;
+  
+  /* Primary - Electric Blue */
+  --primary: #0079FF;
+  --primary-foreground: #FFFFFF;
+  --primary-glow: rgba(0, 121, 255, 0.4);
+  
+  /* Secondary */
+  --secondary: #1C1C1E;
+  --secondary-foreground: #FFFFFF;
+  
+  /* Muted & Text */
+  --muted: #2C2C2E;
+  --muted-foreground: #8B95A1;
+  
+  /* Accent */
+  --accent: #1C1C1E;
+  --accent-foreground: #0079FF;
+  
+  /* Destructive */
+  --destructive: #FF453A;
+  --destructive-foreground: #FFFFFF;
+  
+  /* Borders */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-secondary: rgba(255, 255, 255, 0.05);
+  
+  /* Input */
+  --input: rgba(255, 255, 255, 0.08);
+  --input-background: #1C1C1E;
+  --switch-background: #3A3A3C;
+  
+  /* Ring */
+  --ring: #0079FF;
+  
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+  
+  /* Chart Colors - Electric Palette */
+  --chart-1: #0079FF;
+  --chart-2: #00FFA3;
+  --chart-3: #FFD60A;
+  --chart-4: #FF453A;
+  --chart-5: #BF5AF2;
+  
+  /* Border Radius - Toss Style (Big Rounded) */
+  --radius: 1.5rem; /* 24px */
+  
+  /* Sidebar */
+  --sidebar: #000000;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-primary: #0079FF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #1C1C1E;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #00E5FF;
+  
+  /* Glassmorphism */
+  --glass-background: rgba(28, 28, 30, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-secondary: var(--card-secondary);
+  --color-card-tertiary: var(--card-tertiary);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-glow: var(--primary-glow);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-border-secondary: var(--border-secondary);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 8px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 8px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-glass-background: var(--glass-background);
+  --color-glass-border: var(--glass-border);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /**
+  * Toss-inspired Typography with Bold Hierarchy
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    font-weight: var(--font-weight-extrabold);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  h2 {
+    font-size: 2rem;
+    font-weight: var(--font-weight-bold);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    font-weight: var(--font-weight-bold);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.4;
+  }
+
+  label {
+    font-size: 0.875rem;
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+  }
+
+  input, textarea {
+    font-size: 1rem;
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+  
+  /* Electric Blue Glow Effect */
+  .glow-effect {
+    box-shadow: 0 0 20px var(--primary-glow), 0 0 40px var(--primary-glow);
+  }
+  
+  /* Glassmorphism Effect */
+  .glass-effect {
+    background: var(--glass-background);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+  }
+
+  /* Hide scrollbar for horizontal scroll sections */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
