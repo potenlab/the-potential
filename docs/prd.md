@@ -9,7 +9,7 @@
 
 ---
 
-## 1. Overview
+## 1️⃣ Overview
 
 ### 1.1 Background and Purpose
 
@@ -36,7 +36,7 @@
 
 ---
 
-## 2. User Roles & Permissions
+## 2️⃣ User Roles & Permissions
 
 | Role | Definition & Permissions | Accessible Areas |
 |------|--------------------------|------------------|
@@ -44,7 +44,7 @@
 | Expert/Agency | Service provider. Entity that registers profiles for matching. | Expert profile registration and editing page, same access as regular members |
 | Administrator | Community operation and verification manager. | Dedicated admin dashboard, full page management permissions |
 
-### Permission Levels:
+**Permission Levels:**
 
 - **Regular Member:** Create/edit/delete posts and comments (own), view experts, view support programs.
 - **Expert/Agency:** Create/edit own profile, same permissions as regular members.
@@ -52,9 +52,9 @@
 
 ---
 
-## 3. Information Architecture (IA)
+## 3️⃣ Information Architecture (IA)
 
-```
+```text
 The Potential
 ├── 🌐 Public Zone
 │   ├── Landing Page (Service Introduction)
@@ -72,19 +72,19 @@ The Potential
     └── Content Management (Support Program Upload and Community Moderation)
 ```
 
-### Navigation Pattern:
+**Navigation Pattern:**
 
 - Top Menu Bar (Global Navigation Bar)
 - Main Menu: Home, Community, Find Experts, Support Programs, My Page
 
-### Key User Journeys:
+**Key User Journeys:**
 
 1. Visit Home → Check Support Programs → Move to Community (Feed) to share related information and write posts
 2. Visit Home → Find Experts → Category/Filter Search → View Expert Detailed Profile and Contact
 
 ---
 
-## 4. Detailed Feature Specifications
+## 4️⃣ Detailed Feature Specifications
 
 ### 4.1 Find Experts and Matching
 
@@ -103,7 +103,7 @@ The Potential
 
 ---
 
-## 5. State Management
+## 5️⃣ State Management
 
 ### 5.1 User and Authentication State
 
