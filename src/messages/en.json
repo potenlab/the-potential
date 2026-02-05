@@ -61,6 +61,7 @@
     "profile": "Profile",
     "notifications": "Notifications",
     "signOut": "Sign Out",
+    "signingOut": "Signing Out...",
     "settings": "Settings",
     "help": "Help",
     "admin": "Admin",
@@ -68,7 +69,8 @@
     "expertRegistration": "Expert Registration",
     "menu": "Menu",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "login": "Login"
   },
   "auth": {
     "login": {
@@ -159,6 +161,20 @@
       "afternoon": "Good afternoon, {name}!",
       "evening": "Good evening, {name}!"
     },
+    "hero": {
+      "headlineTop": "Beyond connections, to results,",
+      "headlineBrand": "The Potential",
+      "subtitleLine1": "Real-time insights and verified information for founders, all in one place.",
+      "subtitleLine2": "A startup community platform that accelerates your growth",
+      "activeFounders": "{count} founders are building together right now",
+      "searchPlaceholder": "Search for support programs, partners, and clubs",
+      "popularSearches": "Popular:",
+      "searchTags": {
+        "seed": "Seed Funding",
+        "cto": "CTO Partner",
+        "startup": "Startup Package"
+      }
+    },
     "latestPrograms": "Latest Support Programs",
     "trendingThreads": "Trending Threads",
     "featuredExperts": "Featured Experts",
@@ -177,7 +193,9 @@
       "collaborations": "Successful Collaborations"
     },
     "recentActivity": "Recent Activity",
-    "noActivity": "No activity yet"
+    "noActivity": "No activity yet",
+    "signInToSeeMore": "Sign in to see all support programs",
+    "signInButton": "Sign In"
   },
   "experts": {
     "title": "Find Experts",

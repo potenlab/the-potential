@@ -20,3 +20,6 @@ export { AnnouncerProvider, useAnnouncer, Announcer } from './announcer';
 
 // Internationalization
 export { LanguageSwitcher } from './language-switcher';
+
+// Branding
+export { Logo } from './logo';

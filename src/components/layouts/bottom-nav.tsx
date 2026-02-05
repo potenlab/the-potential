@@ -12,7 +12,7 @@ import { Home, TrendingUp, MessageCircle, Users, User } from 'lucide-react';
  * Maps to the navigation translations in messages/[locale].json
  */
 const navItems = [
-  { href: '/home', labelKey: 'home', icon: Home },
+  { href: '/', labelKey: 'home', icon: Home },
   { href: '/support-programs', labelKey: 'support', icon: TrendingUp },
   { href: '/thread', labelKey: 'thread', icon: MessageCircle },
   { href: '/clubs', labelKey: 'clubs', icon: Users },
@@ -44,7 +44,7 @@ export function BottomNav() {
         // Only visible on mobile
         'md:hidden',
         // Height and styling
-        'h-20 bg-black/95 backdrop-blur-md border-t border-white/8',
+        'h-[88px] bg-black/95 backdrop-blur-md border-t border-white/8',
         // Safe area for iOS notch
         'pb-[env(safe-area-inset-bottom)]'
       )}
@@ -54,7 +54,9 @@ export function BottomNav() {
       <div className="flex items-center justify-around h-full px-2">
         {navItems.map((item) => {
           const isActive =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
+            item.href === '/'
+              ? pathname === '/' || pathname === ''
+              : pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
 
           return (
@@ -63,7 +65,7 @@ export function BottomNav() {
               href={item.href}
               className={cn(
                 'relative flex flex-col items-center justify-center',
-                'min-w-[60px] py-2 transition-transform duration-200',
+                'min-w-[68px] py-3 transition-transform duration-200',
                 // Scale up when active
                 isActive && 'scale-110 -translate-y-0.5'
               )}
@@ -73,7 +75,7 @@ export function BottomNav() {
               {isActive && (
                 <motion.div
                   layoutId="activeBottomNavIndicator"
-                  className="absolute -top-2 w-12 h-1 rounded-full bg-[#0079FF]"
+                  className="absolute -top-2 w-14 h-1.5 rounded-full bg-[#0079FF]"
                   initial={false}
                   transition={{
                     type: 'spring',
@@ -90,7 +92,7 @@ export function BottomNav() {
                   isActive ? 'text-[#0079FF]' : 'text-[#8B95A1]'
                 )}
               >
-                <Icon className="h-6 w-6" strokeWidth={2} />
+                <Icon className="h-7 w-7" strokeWidth={2} />
                 {/* Glow effect behind active icon */}
                 {isActive && (
                   <div
@@ -103,7 +105,7 @@ export function BottomNav() {
               {/* Label */}
               <span
                 className={cn(
-                  'text-xs font-medium mt-1 transition-colors duration-200',
+                  'text-sm font-medium mt-1 transition-colors duration-200',
                   isActive ? 'text-[#0079FF]' : 'text-[#8B95A1]'
                 )}
               >

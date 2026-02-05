@@ -18,16 +18,16 @@ import { Spinner } from '@/components/ui/spinner';
  */
 const buttonVariants = cva(
   // Base styles - Toss-style with smooth transitions
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*="size-"])]:size-4 shrink-0 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*="size-"])]:size-4 shrink-0 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         // Primary - Electric Blue (#0079FF)
         primary:
-          'bg-[#0079FF] text-white hover:bg-[#0079FF]/90 hover:scale-[1.02] active:scale-[0.98]',
-        // Primary Glow - Cyan (#00E5FF) with glow effect
+          'bg-[#0079FF] text-white hover:bg-[#0079FF]/90',
+        // Primary Glow - Cyan (#00E5FF)
         'primary-glow':
-          'bg-[#00E5FF] text-black font-bold hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_40px_rgba(0,229,255,0.4)] hover:shadow-[0_0_50px_rgba(0,229,255,0.5)]',
+          'bg-[#00E5FF] text-black font-bold hover:bg-[#00E5FF]/85',
         // Secondary - Outline with primary color
         secondary:
           'border border-[#0079FF]/30 text-[#0079FF] bg-transparent hover:bg-[#0079FF]/10 hover:border-[#0079FF]/50',
@@ -42,13 +42,13 @@ const buttonVariants = cva(
         link: 'text-[#0079FF] underline-offset-4 hover:underline',
       },
       size: {
-        sm: 'h-8 px-4 text-sm rounded-xl', // 32px height
-        md: 'h-10 px-6 text-base rounded-2xl', // 40px height
-        lg: 'h-12 px-8 text-lg rounded-2xl', // 48px height
-        xl: 'h-14 px-10 text-xl rounded-2xl', // 56px height
-        icon: 'h-10 w-10 rounded-2xl',
-        'icon-sm': 'h-8 w-8 rounded-xl',
-        'icon-lg': 'h-12 w-12 rounded-2xl',
+        sm: 'h-10 px-5 text-base rounded-xl', // 40px height
+        md: 'h-12 px-8 text-lg rounded-2xl', // 48px height
+        lg: 'h-14 px-10 text-xl rounded-2xl', // 56px height
+        xl: 'h-16 px-12 text-2xl rounded-2xl', // 64px height
+        icon: 'h-12 w-12 rounded-2xl',
+        'icon-sm': 'h-10 w-10 rounded-xl',
+        'icon-lg': 'h-14 w-14 rounded-2xl',
       },
     },
     defaultVariants: {
@@ -87,10 +87,23 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const Comp = asChild ? Slot.Root : 'button';
+    if (asChild) {
+      return (
+        <Slot.Root
+          data-slot="button"
+          data-variant={variant}
+          data-size={size}
+          className={cn(buttonVariants({ variant, size, className }))}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </Slot.Root>
+      );
+    }
 
     return (
-      <Comp
+      <button
         data-slot="button"
         data-variant={variant}
         data-size={size}
@@ -102,7 +115,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {loading ? <Spinner size="sm" /> : leftIcon}
         {children}
         {!loading && rightIcon}
-      </Comp>
+      </button>
     );
   }
 );

@@ -82,16 +82,14 @@ function DialogContent({
           // Rounded-3xl (24px) border radius as per design system
           "rounded-3xl",
           // Padding and spacing
-          "gap-4 p-6 md:p-8",
+          "gap-4 p-8 md:p-10",
           // Shadow
           "shadow-xl",
-          // Animations - fade and zoom
+          // Animations - fade and zoom from center
           "duration-300 outline-none",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          "data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%]",
-          "data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]",
           // Max width for different screen sizes
           "sm:max-w-lg",
           className
@@ -177,7 +175,7 @@ function DialogTitle({
       data-slot="dialog-title"
       className={cn(
         // Typography - matching design system
-        "text-xl font-bold leading-tight tracking-tight",
+        "text-2xl font-bold leading-tight tracking-tight",
         // Color
         "text-white",
         className
@@ -196,7 +194,7 @@ function DialogDescription({
       data-slot="dialog-description"
       className={cn(
         // Typography
-        "text-sm leading-relaxed",
+        "text-base leading-relaxed",
         // Color - muted text
         "text-muted",
         className

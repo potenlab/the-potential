@@ -3,6 +3,9 @@
  * This file serves as the central export point for all custom hooks
  */
 
+// Auth hook
+export { useAuth } from './use-auth';
+
 // Realtime hooks for Supabase subscriptions
 export { useRealtimePosts } from './use-realtime-posts';
 export { useRealtimeNotifications } from './use-realtime-notifications';

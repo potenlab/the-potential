@@ -3,30 +3,28 @@
 /**
  * Expert Card Component
  *
- * Displays an expert in a card format with:
+ * Displays an expert in a clean, modern card format with:
  * - Avatar with availability indicator
  * - Name, company, and category
  * - Expertise tags (badges)
- * - Hourly rate
+ * - Hourly rate and experience
  * - Verified badge for approved experts
- * - Featured highlight
- * - Hover animation
- * - Click navigation to expert profile
+ * - Featured highlight (subtle)
+ * - Subtle hover effect (border color change only)
+ * - Click navigation to expert profile (entire card is a link)
  *
  * Uses customized UI wrappers from @/components/ui/ and translations.
  */
 
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
-import { motion } from 'framer-motion';
-import { BadgeCheck, Star, Clock } from 'lucide-react';
+import { BadgeCheck, Star, Clock, ArrowUpRight } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 import { Link } from '@/i18n/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 
 import type { ExpertWithProfile } from '../types';
 
@@ -62,24 +60,16 @@ function formatHourlyRate(rate: number | null): string {
 }
 
 /**
- * Availability Indicator Component
- * Shows a pulsing green dot for available experts
- */
-function AvailabilityIndicator({ isAvailable }: { isAvailable: boolean }) {
-  if (!isAvailable) return null;
-
-  return (
-    <span className="absolute bottom-0 right-0 z-10">
-      <span className="relative flex h-3 w-3">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-        <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-500 ring-2 ring-card" />
-      </span>
-    </span>
-  );
-}
-
-/**
  * Expert Card Component
+ *
+ * Clean vertical layout:
+ * 1. Featured badge (top-right, subtle) if applicable
+ * 2. Avatar (centered) with availability dot
+ * 3. Name + verified badge
+ * 4. Company name
+ * 5. Category badge
+ * 6. Specialty tags
+ * 7. Bottom stats: experience + hourly rate
  */
 export function ExpertCard({ expert, className }: ExpertCardProps) {
   const t = useTranslations('experts.card');
@@ -98,89 +88,93 @@ export function ExpertCard({ expert, className }: ExpertCardProps) {
   } = expert;
 
   const isVerified = status === 'approved';
+  const displayName = profile.full_name || business_name;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
-      whileHover={{ y: -4 }}
-    >
-      <Link href={`/experts/${id}`} className="block">
-        <Card
-          variant={is_featured ? 'glow' : 'interactive'}
-          padding="none"
-          className={cn(
-            'group overflow-hidden transition-all duration-300',
-            is_featured && 'border-primary/50',
-            className
+    <Link href={`/experts/${id}`} className="group block h-full outline-none">
+      <Card
+        variant="default"
+        padding="none"
+        className={cn(
+          'relative h-full overflow-hidden transition-colors duration-200',
+          'hover:border-primary/40',
+          'focus-within:border-primary/40',
+          is_featured && 'border-primary/20',
+          className
+        )}
+        role="article"
+        aria-label={`Expert profile: ${displayName}`}
+      >
+        <CardContent className="flex h-full flex-col p-5">
+          {/* Featured Badge - Top Right, Subtle */}
+          {is_featured && (
+            <div className="absolute right-3 top-3">
+              <Badge variant="warning" size="sm" className="gap-1">
+                <Star className="h-3 w-3 fill-current" />
+                {t('featured')}
+              </Badge>
+            </div>
           )}
-          role="article"
-          aria-label={`Expert profile: ${profile.full_name || business_name}`}
-        >
-          <CardContent className="p-5">
-            {/* Featured Badge - Top Right */}
-            {is_featured && (
-              <div className="absolute right-3 top-3">
-                <Badge variant="warning" size="sm" className="gap-1">
-                  <Star className="h-3 w-3 fill-current" />
-                  {t('featured')}
-                </Badge>
-              </div>
-            )}
 
-            {/* Header: Avatar and Basic Info */}
-            <div className="flex items-start gap-4">
-              {/* Avatar with Availability Indicator */}
-              <div className="relative shrink-0">
-                <Avatar size="lg">
-                  {profile.avatar_url ? (
-                    <AvatarImage
-                      src={profile.avatar_url}
-                      alt={profile.full_name || 'Expert avatar'}
-                    />
-                  ) : null}
-                  <AvatarFallback>
-                    {getInitials(profile.full_name)}
-                  </AvatarFallback>
-                </Avatar>
-                <AvailabilityIndicator isAvailable={is_available} />
-              </div>
-
-              {/* Name, Company, Category */}
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h3 className="truncate text-lg font-bold text-white">
-                    {profile.full_name || business_name}
-                  </h3>
-                  {isVerified && (
-                    <BadgeCheck className="h-5 w-5 shrink-0 text-primary" aria-label={t('verified')} />
-                  )}
-                </div>
-
-                {profile.company_name && (
-                  <p className="mt-0.5 truncate text-sm text-muted">
-                    {profile.company_name}
-                  </p>
-                )}
-
-                <div className="mt-1 flex items-center gap-2">
-                  <Badge variant="default" size="sm">
-                    {category}
-                  </Badge>
-                  {is_available && (
-                    <Badge variant="success" size="sm">
-                      {t('available')}
-                    </Badge>
-                  )}
-                </div>
-              </div>
+          {/* Avatar Section - Centered */}
+          <div className="flex flex-col items-center text-center">
+            {/* Avatar with Availability */}
+            <div className="relative mb-3">
+              <Avatar
+                size="lg"
+                showStatus={is_available}
+                statusColor="success"
+              >
+                {profile.avatar_url ? (
+                  <AvatarImage
+                    src={profile.avatar_url}
+                    alt={displayName || 'Expert avatar'}
+                  />
+                ) : null}
+                <AvatarFallback>
+                  {getInitials(profile.full_name)}
+                </AvatarFallback>
+              </Avatar>
             </div>
 
-            {/* Expertise Tags */}
+            {/* Name + Verified */}
+            <div className="flex items-center justify-center gap-1.5">
+              <h3 className="text-lg font-semibold leading-tight text-white">
+                {displayName}
+              </h3>
+              {isVerified && (
+                <BadgeCheck
+                  className="h-4 w-4 shrink-0 text-primary"
+                  aria-label={t('verified')}
+                />
+              )}
+            </div>
+
+            {/* Company Name */}
+            {profile.company_name && (
+              <p className="mt-1 text-base text-[#8B95A1]">
+                {profile.company_name}
+              </p>
+            )}
+
+            {/* Category Badge */}
+            <div className="mt-2.5 flex items-center justify-center gap-2">
+              <Badge variant="default" size="sm">
+                {category}
+              </Badge>
+              {is_available && (
+                <Badge variant="success" size="sm">
+                  {t('available')}
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Specialty Tags */}
+          <div className="mt-4 min-h-[28px] flex flex-wrap justify-center gap-1.5">
             {specialty && specialty.length > 0 && (
-              <div className="mt-4 flex flex-wrap gap-1.5">
-                {specialty.slice(0, 4).map((skill) => (
+              <>
+                {specialty.slice(0, 3).map((skill) => (
                   <Badge
                     key={skill}
                     variant="muted"
@@ -190,50 +184,43 @@ export function ExpertCard({ expert, className }: ExpertCardProps) {
                     {skill}
                   </Badge>
                 ))}
-                {specialty.length > 4 && (
+                {specialty.length > 3 && (
                   <Badge variant="muted" size="sm" className="font-normal">
-                    +{specialty.length - 4}
+                    +{specialty.length - 3}
                   </Badge>
                 )}
-              </div>
+              </>
             )}
+          </div>
 
-            {/* Bottom Info: Experience and Rate */}
-            <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-4">
-              <div className="flex items-center gap-4 text-sm text-muted">
-                {experience_years && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {t('yearsExperience', { years: experience_years })}
-                  </span>
-                )}
-              </div>
-
-              {hourly_rate && (
-                <div className="text-right">
-                  <p className="text-lg font-bold text-white">
-                    {formatHourlyRate(hourly_rate)}
-                  </p>
-                  <p className="text-xs text-muted">/hour</p>
-                </div>
+          {/* Bottom Stats: Experience + Rate */}
+          <div className="mt-auto flex items-center justify-between border-t border-white/[0.06] pt-3">
+            <div className="text-base text-[#8B95A1]">
+              {experience_years ? (
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  {t('yearsExperience', { years: experience_years })}
+                </span>
+              ) : (
+                <span />
               )}
             </div>
 
-            {/* View Profile Button - Shows on Hover */}
-            <div className="mt-4 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="w-full"
-                tabIndex={-1}
-              >
-                {t('viewProfile')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-    </motion.div>
+            {hourly_rate ? (
+              <div className="text-right">
+                <span className="text-base font-semibold text-white">
+                  {formatHourlyRate(hourly_rate)}
+                </span>
+                <span className="ml-0.5 text-sm text-[#8B95A1]">/hr</span>
+              </div>
+            ) : (
+              /* Arrow indicator that it is clickable */
+              <ArrowUpRight className="h-4 w-4 text-[#8B95A1] transition-colors group-hover:text-primary" />
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 

@@ -42,37 +42,33 @@ export interface ExpertGridProps {
 
 /**
  * Expert Card Skeleton for loading state
+ * Matches the vertical centered layout of ExpertCard
  */
 function ExpertCardSkeleton() {
   return (
-    <div className="rounded-3xl border border-white/[0.08] bg-card p-5">
-      {/* Header with avatar */}
-      <div className="flex items-start gap-4">
-        <Skeleton className="h-16 w-16 shrink-0" rounded="full" />
-        <div className="min-w-0 flex-1 space-y-2">
-          <Skeleton className="h-5 w-3/4" rounded="md" />
-          <Skeleton className="h-4 w-1/2" rounded="md" />
-          <div className="flex gap-2">
-            <Skeleton className="h-5 w-16" rounded="full" />
-            <Skeleton className="h-5 w-16" rounded="full" />
-          </div>
+    <div className="rounded-3xl border border-white/[0.08] bg-[#121212] p-5">
+      {/* Centered avatar */}
+      <div className="flex flex-col items-center">
+        <Skeleton className="mb-3 h-16 w-16" rounded="full" />
+        <Skeleton className="h-5 w-28" rounded="md" />
+        <Skeleton className="mt-1.5 h-4 w-20" rounded="md" />
+        <div className="mt-2.5 flex gap-2">
+          <Skeleton className="h-5 w-16" rounded="full" />
+          <Skeleton className="h-5 w-16" rounded="full" />
         </div>
       </div>
 
       {/* Tags */}
-      <div className="mt-4 flex flex-wrap gap-1.5">
-        <Skeleton className="h-6 w-20" rounded="full" />
-        <Skeleton className="h-6 w-24" rounded="full" />
-        <Skeleton className="h-6 w-16" rounded="full" />
+      <div className="mt-4 flex flex-wrap justify-center gap-1.5">
+        <Skeleton className="h-5 w-16" rounded="full" />
+        <Skeleton className="h-5 w-20" rounded="full" />
+        <Skeleton className="h-5 w-14" rounded="full" />
       </div>
 
       {/* Bottom info */}
-      <div className="mt-4 flex items-center justify-between border-t border-white/[0.08] pt-4">
-        <Skeleton className="h-4 w-24" rounded="md" />
-        <div className="text-right">
-          <Skeleton className="h-5 w-20" rounded="md" />
-          <Skeleton className="mt-1 h-3 w-12" rounded="md" />
-        </div>
+      <div className="mt-4 flex items-center justify-between border-t border-white/[0.06] pt-3">
+        <Skeleton className="h-4 w-20" rounded="md" />
+        <Skeleton className="h-4 w-16" rounded="md" />
       </div>
     </div>
   );
@@ -97,8 +93,8 @@ function EmptyState({ onClearFilters }: EmptyStateProps) {
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
         <Search className="h-8 w-8 text-muted" />
       </div>
-      <h3 className="mb-2 text-lg font-semibold text-white">{t('empty')}</h3>
-      <p className="mb-6 max-w-sm text-sm text-muted">{t('emptyDescription')}</p>
+      <h3 className="mb-2 text-xl font-semibold text-white">{t('empty')}</h3>
+      <p className="mb-6 max-w-sm text-base text-muted">{t('emptyDescription')}</p>
       {onClearFilters && (
         <Button variant="secondary" onClick={onClearFilters}>
           {t('filters.reset')}
@@ -132,7 +128,7 @@ function ResultsHeader({ count, filters, onClearFilters }: ResultsHeaderProps) {
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <Users className="h-5 w-5 text-muted" />
-        <span className="text-sm text-muted">
+        <span className="text-base text-muted">
           {count === 1
             ? t('resultsCountSingular', { count })
             : t('resultsCount', { count })}
@@ -208,7 +204,7 @@ export function ExpertGrid({
   if (isError) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <p className="mb-4 text-sm text-error">
+        <p className="mb-4 text-base text-error">
           {error?.message || t('error')}
         </p>
         <Button variant="secondary" onClick={() => refetch()}>
@@ -246,7 +242,7 @@ export function ExpertGrid({
 
         {/* Loading State */}
         {isLoading && (
-          <div className={cn('grid gap-4', gridColumnsClass)}>
+          <div className={cn('grid gap-6', gridColumnsClass)}>
             {Array.from({ length: 8 }).map((_, index) => (
               <ExpertCardSkeleton key={index} />
             ))}
@@ -262,7 +258,7 @@ export function ExpertGrid({
         {!isLoading && experts.length > 0 && (
           <AnimatePresence mode="popLayout">
             <motion.div
-              className={cn('grid gap-4', gridColumnsClass)}
+              className={cn('grid gap-6', gridColumnsClass)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -270,6 +266,7 @@ export function ExpertGrid({
               {experts.map((expert, index) => (
                 <motion.div
                   key={expert.id}
+                  className="h-full"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
@@ -335,7 +332,7 @@ export function ExpertGridSimple({
   // Loading State
   if (isLoading) {
     return (
-      <div className={cn('grid gap-4', gridColumnsClass, className)}>
+      <div className={cn('grid gap-6', gridColumnsClass, className)}>
         {Array.from({ length: 8 }).map((_, index) => (
           <ExpertCardSkeleton key={index} />
         ))}
@@ -354,7 +351,7 @@ export function ExpertGridSimple({
       {showHeader && (
         <div className="mb-6 flex items-center gap-2">
           <Users className="h-5 w-5 text-muted" />
-          <span className="text-sm text-muted">
+          <span className="text-base text-muted">
             {count === 1
               ? t('resultsCountSingular', { count })
               : t('resultsCount', { count })}
@@ -365,7 +362,7 @@ export function ExpertGridSimple({
       {/* Expert Cards Grid */}
       <AnimatePresence mode="popLayout">
         <motion.div
-          className={cn('grid gap-4', gridColumnsClass)}
+          className={cn('grid gap-6', gridColumnsClass)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

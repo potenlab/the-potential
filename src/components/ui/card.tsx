@@ -31,15 +31,15 @@ const cardVariants = cva(
         interactive:
           'bg-[#121212] border-white/[0.08] hover:border-[#0079FF]/40 hover:scale-[1.02] cursor-pointer',
         // Glow - Primary color glow shadow
-        glow: 'bg-[#121212] border-[#0079FF]/40 shadow-[0_0_20px_rgba(0,121,255,0.4)]',
+        glow: 'bg-[#121212] border-[#0079FF]/40 shadow-[0_0_12px_rgba(0,121,255,0.3)]',
         // Ghost - Transparent background
         ghost: 'bg-transparent border-transparent',
       },
       padding: {
         none: '',
-        sm: 'p-4',
-        md: 'p-5',
-        lg: 'p-6 md:p-8',
+        sm: 'p-5',
+        md: 'p-6',
+        lg: 'p-8 md:p-10',
       },
     },
     defaultVariants: {
@@ -86,7 +86,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     data-slot="card-title"
-    className={cn('text-xl font-bold leading-tight text-white', className)}
+    className={cn('text-2xl font-bold leading-tight text-white', className)}
     {...props}
   />
 ));
@@ -99,7 +99,7 @@ const CardDescription = React.forwardRef<
   <p
     ref={ref}
     data-slot="card-description"
-    className={cn('text-sm text-[#8B95A1]', className)}
+    className={cn('text-base text-[#8B95A1]', className)}
     {...props}
   />
 ));

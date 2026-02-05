@@ -57,7 +57,7 @@ export async function createClient(request: NextRequest) {
  */
 export const routeConfig = {
   // Routes that require authentication
-  protectedRoutes: ['/home', '/thread', '/experts', '/profile', '/clubs', '/support-programs', '/expert-registration'],
+  protectedRoutes: ['/thread', '/experts', '/profile', '/clubs', '/support-programs', '/expert-registration'],
   // Routes that are only accessible when NOT authenticated
   authRoutes: ['/login', '/signup'],
   // Routes that require admin role
@@ -104,7 +104,7 @@ export async function updateSession(request: NextRequest) {
 
   // Redirect authenticated users from auth routes to home
   if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+    return NextResponse.redirect(new URL(`/${locale}`, request.url));
   }
 
   // Check admin routes - requires fetching user profile
@@ -117,7 +117,7 @@ export async function updateSession(request: NextRequest) {
 
     // Redirect non-admin users from admin routes
     if (!profile || profile.role !== 'admin' || profile.approval_status !== 'approved') {
-      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      return NextResponse.redirect(new URL(`/${locale}`, request.url));
     }
   }
 
