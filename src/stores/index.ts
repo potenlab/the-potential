@@ -5,5 +5,4 @@
  */
 
 // Re-export all stores from subdirectories as they are created
-// Example: export * from './auth-store';
-// Example: export * from './ui-store';
+export * from './auth-modal-store';

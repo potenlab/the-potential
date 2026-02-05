@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Table,
   TableBody,
@@ -111,6 +110,9 @@ export default function ContentManagementPage() {
   const tCommon = useTranslations('common');
   const tPrograms = useTranslations('supportPrograms');
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<'programs' | 'posts'>('programs');
+
   // Programs state
   const [programSearch, setProgramSearch] = useState('');
   const [programStatusFilter, setProgramStatusFilter] = useState<ProgramStatus | 'all'>('all');
@@ -191,12 +193,7 @@ export default function ContentManagementPage() {
         updates: programData,
       });
     } else {
-      // For new programs, we need to get the current user ID
-      // This would normally come from auth context
-      await createProgram.mutateAsync({
-        ...programData,
-        created_by: '', // This should be populated from auth context in real implementation
-      });
+      await createProgram.mutateAsync(programData);
     }
 
     setIsProgramDialogOpen(false);
@@ -265,21 +262,38 @@ export default function ContentManagementPage() {
         </p>
       </div>
 
-      {/* Tabbed Content */}
-      <Tabs defaultValue="programs" className="w-full">
-        <TabsList variant="line" className="mb-6">
-          <TabsTrigger value="programs" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            {t('programs')}
-          </TabsTrigger>
-          <TabsTrigger value="posts" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            {t('posts')}
-          </TabsTrigger>
-        </TabsList>
+      {/* Tab Buttons */}
+      <div className="flex flex-wrap gap-2">
+        <Button
+          variant={activeTab === 'programs' ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('programs')}
+          className={cn(
+            'transition-all',
+            activeTab === 'programs' &&
+              'bg-violet-600/20 text-violet-400 border-violet-500/30 hover:bg-violet-600/30'
+          )}
+        >
+          <FileText className="mr-2 h-4 w-4" />
+          {t('programs')}
+        </Button>
+        <Button
+          variant={activeTab === 'posts' ? 'secondary' : 'ghost'}
+          size="sm"
+          onClick={() => setActiveTab('posts')}
+          className={cn(
+            'transition-all',
+            activeTab === 'posts' &&
+              'bg-violet-600/20 text-violet-400 border-violet-500/30 hover:bg-violet-600/30'
+          )}
+        >
+          <MessageSquare className="mr-2 h-4 w-4" />
+          {t('posts')}
+        </Button>
+      </div>
 
-        {/* Programs Tab */}
-        <TabsContent value="programs">
+      {/* Programs Tab */}
+      {activeTab === 'programs' && (
           <Card variant="default" padding="none">
             <CardHeader className="p-6 pb-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -407,10 +421,10 @@ export default function ContentManagementPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
+      )}
 
-        {/* Posts Tab */}
-        <TabsContent value="posts">
+      {/* Posts Tab */}
+      {activeTab === 'posts' && (
           <Card variant="default" padding="none">
             <CardHeader className="p-6 pb-4">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -549,8 +563,7 @@ export default function ContentManagementPage() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+      )}
 
       {/* Program Create/Edit Dialog */}
       <Dialog open={isProgramDialogOpen} onOpenChange={setIsProgramDialogOpen}>

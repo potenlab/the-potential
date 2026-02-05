@@ -32,6 +32,8 @@ import { ArrowLeft, Coffee, Handshake, Share2, UserX } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 import { Link, useRouter } from '@/i18n/navigation';
+import { useAuth } from '@/hooks/use-auth';
+import { useAuthModalStore } from '@/stores/auth-modal-store';
 
 // UI Components
 import { Button } from '@/components/ui/button';
@@ -210,6 +212,7 @@ interface StickyCTABarProps {
   onCollaboration: () => void;
   isAvailable: boolean;
   isLoading: boolean;
+  isOwnProfile?: boolean;
 }
 
 /**
@@ -220,8 +223,12 @@ function StickyCTABar({
   onCollaboration,
   isAvailable,
   isLoading,
+  isOwnProfile = false,
 }: StickyCTABarProps) {
   const t = useTranslations('experts.profile');
+
+  // Hide the sticky CTA bar if viewing own profile
+  if (isOwnProfile) return null;
 
   return (
     <motion.div
@@ -273,6 +280,7 @@ interface SidebarCTAProps {
   isAvailable: boolean;
   isLoading: boolean;
   expertName: string;
+  isOwnProfile?: boolean;
 }
 
 /**
@@ -285,6 +293,7 @@ function SidebarCTA({
   isAvailable,
   isLoading,
   expertName,
+  isOwnProfile = false,
 }: SidebarCTAProps) {
   const t = useTranslations('experts.profile');
   const tCommon = useTranslations('common');
@@ -306,48 +315,59 @@ function SidebarCTA({
             </p>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="space-y-3">
-            <Button
-              variant="primary-glow"
-              size="lg"
-              onClick={onCollaboration}
-              disabled={isLoading || !isAvailable}
-              loading={isLoading}
-              leftIcon={<Handshake className="h-5 w-5" />}
-              className="w-full"
-            >
-              {t('collaboration')}
-            </Button>
+          {/* Own Profile Notice */}
+          {isOwnProfile ? (
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+              <p className="text-sm text-muted text-center">
+                {t('ownProfile')}
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* CTA Buttons */}
+              <div className="space-y-3">
+                <Button
+                  variant="primary-glow"
+                  size="lg"
+                  onClick={onCollaboration}
+                  disabled={isLoading || !isAvailable}
+                  loading={isLoading}
+                  leftIcon={<Handshake className="h-5 w-5" />}
+                  className="w-full"
+                >
+                  {t('collaboration')}
+                </Button>
 
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={onCoffeeChat}
-              disabled={isLoading || !isAvailable}
-              leftIcon={<Coffee className="h-5 w-5" />}
-              className="w-full"
-            >
-              {t('coffeeChat')}
-            </Button>
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  onClick={onCoffeeChat}
+                  disabled={isLoading || !isAvailable}
+                  leftIcon={<Coffee className="h-5 w-5" />}
+                  className="w-full"
+                >
+                  {t('coffeeChat')}
+                </Button>
+              </div>
 
-            <Button
-              variant="outline"
-              size="md"
-              onClick={onShare}
-              leftIcon={<Share2 className="h-4 w-4" />}
-              className="w-full"
-            >
-              {t('share')}
-            </Button>
-          </div>
-
-          {/* Availability Notice */}
-          {!isAvailable && (
-            <p className="text-xs text-muted text-center pt-2">
-              {tCommon('pending')}
-            </p>
+              {/* Availability Notice */}
+              {!isAvailable && (
+                <p className="text-xs text-muted text-center pt-2">
+                  {tCommon('pending')}
+                </p>
+              )}
+            </>
           )}
+
+          <Button
+            variant="outline"
+            size="md"
+            onClick={onShare}
+            leftIcon={<Share2 className="h-4 w-4" />}
+            className="w-full"
+          >
+            {t('share')}
+          </Button>
         </CardContent>
       </Card>
     </motion.div>
@@ -367,6 +387,10 @@ export default function ExpertProfilePage() {
   const t = useTranslations('experts');
   const tCommon = useTranslations('common');
 
+  // Auth state
+  const { user, isAuthenticated } = useAuth();
+  const { openLogin } = useAuthModalStore();
+
   // Get expert ID from params
   const expertId = React.useMemo(() => {
     const id = params?.id;
@@ -380,6 +404,12 @@ export default function ExpertProfilePage() {
     isError,
   } = useExpert(expertId ?? '');
 
+  // Check if the logged-in user is viewing their own expert profile
+  const isOwnProfile = React.useMemo(() => {
+    if (!user || !expert) return false;
+    return user.id === expert.user_id;
+  }, [user, expert]);
+
   // Modal states
   const [isCollaborationModalOpen, setIsCollaborationModalOpen] =
     React.useState(false);
@@ -391,13 +421,23 @@ export default function ExpertProfilePage() {
     router.push('/experts');
   };
 
-  // Handle collaboration modal
+  // Handle collaboration modal - check auth first, prevent self-request
   const handleOpenCollaboration = () => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+    if (isOwnProfile) return;
     setIsCollaborationModalOpen(true);
   };
 
-  // Handle coffee chat modal
+  // Handle coffee chat modal - check auth first, prevent self-request
   const handleOpenCoffeeChat = () => {
+    if (!isAuthenticated) {
+      openLogin();
+      return;
+    }
+    if (isOwnProfile) return;
     setIsCoffeeChatModalOpen(true);
   };
 
@@ -494,6 +534,7 @@ export default function ExpertProfilePage() {
               onCollaboration={handleOpenCollaboration}
               onCoffeeChat={handleOpenCoffeeChat}
               isLoading={false}
+              isOwnProfile={isOwnProfile}
             />
 
             {/* Expertise Section */}
@@ -518,6 +559,7 @@ export default function ExpertProfilePage() {
               isAvailable={expert.is_available}
               isLoading={false}
               expertName={expertName}
+              isOwnProfile={isOwnProfile}
             />
           </div>
         </div>
@@ -530,6 +572,7 @@ export default function ExpertProfilePage() {
           onCollaboration={handleOpenCollaboration}
           isAvailable={expert.is_available}
           isLoading={false}
+          isOwnProfile={isOwnProfile}
         />
       </AnimatePresence>
 

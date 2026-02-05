@@ -45,6 +45,8 @@ export interface ExpertProfileHeaderProps {
   onCoffeeChat?: () => void;
   /** Whether collaboration request is in progress */
   isLoading?: boolean;
+  /** Whether the logged-in user is viewing their own expert profile */
+  isOwnProfile?: boolean;
   /** Additional CSS classes */
   className?: string;
 }
@@ -153,6 +155,7 @@ export function ExpertProfileHeader({
   onCollaboration,
   onCoffeeChat,
   isLoading = false,
+  isOwnProfile = false,
   className,
 }: ExpertProfileHeaderProps) {
   const t = useTranslations('experts.profile');
@@ -308,30 +311,38 @@ export function ExpertProfileHeader({
             />
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button
-              variant="secondary"
-              size="lg"
-              onClick={onCoffeeChat}
-              disabled={isLoading || !is_available}
-              leftIcon={<Coffee className="h-5 w-5" />}
-              className="flex-1"
-            >
-              {t('coffeeChat')}
-            </Button>
-            <Button
-              variant="primary-glow"
-              size="lg"
-              onClick={onCollaboration}
-              disabled={isLoading || !is_available}
-              loading={isLoading}
-              leftIcon={<Handshake className="h-5 w-5" />}
-              className="flex-1"
-            >
-              {t('collaboration')}
-            </Button>
-          </div>
+          {/* CTA Buttons - Hidden when viewing own profile */}
+          {isOwnProfile ? (
+            <div className="p-3 rounded-2xl bg-white/5 border border-white/10">
+              <p className="text-sm text-muted text-center">
+                {t('ownProfile')}
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="secondary"
+                size="lg"
+                onClick={onCoffeeChat}
+                disabled={isLoading || !is_available}
+                leftIcon={<Coffee className="h-5 w-5" />}
+                className="flex-1"
+              >
+                {t('coffeeChat')}
+              </Button>
+              <Button
+                variant="primary-glow"
+                size="lg"
+                onClick={onCollaboration}
+                disabled={isLoading || !is_available}
+                loading={isLoading}
+                leftIcon={<Handshake className="h-5 w-5" />}
+                className="flex-1"
+              >
+                {t('collaboration')}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </motion.div>

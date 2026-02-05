@@ -6,11 +6,9 @@
  * A beautifully composed landing page featuring:
  * - Hero section with animated floating orbs, gradient text, glowing search bar
  * - Stats bar with animated counters and dividers
- * - Quick actions with hover arrow animations and backdrop blur
- * - Latest support programs carousel with gradient fade and snap scroll
- * - Trending threads with numbered ranking badges
- * - Featured experts CTA with animated gradient border and moving blobs
- * - Bottom CTA with gradient divider and simplified message
+ * - Auth-aware content:
+ *   - Logged-in: Quick actions, support programs carousel, trending threads, experts CTA, bottom CTA
+ *   - Non-logged-in: Value propositions, programs preview, testimonials, experts CTA, landing CTA
  * - All with premium animations and glow effects following the design system
  */
 
@@ -28,14 +26,19 @@ import {
   Rocket,
   Search,
   Lock,
+  Shield,
+  Heart,
+  Quote,
 } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 import { Link } from '@/i18n/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useAuth } from '@/hooks/use-auth';
+import { useAuthModalStore } from '@/stores/auth-modal-store';
 import {
   Skeleton,
   SkeletonText,
@@ -171,6 +174,80 @@ const statsConfig = [
   { value: '500+', labelKey: 'stats.collaborations' as const, icon: TrendingUp },
 ];
 
+// Value proposition cards configuration
+const valuePropsConfig = [
+  {
+    key: 'experts' as const,
+    icon: Shield,
+    gradient: 'from-blue-500/20 via-blue-500/5 to-transparent',
+    iconBg: 'bg-blue-500/10',
+    iconColor: 'text-blue-400',
+    borderGlow: 'hover:border-blue-500/20',
+    shadowGlow: 'hover:shadow-[0_0_30px_rgba(59,130,246,0.1)]',
+  },
+  {
+    key: 'programs' as const,
+    icon: Rocket,
+    gradient: 'from-emerald-500/20 via-emerald-500/5 to-transparent',
+    iconBg: 'bg-emerald-500/10',
+    iconColor: 'text-emerald-400',
+    borderGlow: 'hover:border-emerald-500/20',
+    shadowGlow: 'hover:shadow-[0_0_30px_rgba(52,211,153,0.1)]',
+  },
+  {
+    key: 'community' as const,
+    icon: Heart,
+    gradient: 'from-purple-500/20 via-purple-500/5 to-transparent',
+    iconBg: 'bg-purple-500/10',
+    iconColor: 'text-purple-400',
+    borderGlow: 'hover:border-purple-500/20',
+    shadowGlow: 'hover:shadow-[0_0_30px_rgba(168,85,247,0.1)]',
+  },
+];
+
+// Static testimonial data (hardcoded since next-intl doesn't support array access)
+const testimonialsEn = [
+  {
+    quote:
+      'The Potential helped me find the perfect CTO match for my startup. The expert verification gives real peace of mind.',
+    author: 'Sarah K.',
+    role: 'CEO, TechVenture',
+  },
+  {
+    quote:
+      'I discovered a funding program through this platform that I wouldn\'t have found anywhere else. Truly a game-changer.',
+    author: 'James L.',
+    role: 'Founder, GreenStart',
+  },
+  {
+    quote:
+      'The community here is incredibly supportive. Real founders sharing real experiences - no fluff, just genuine insights.',
+    author: 'Mina P.',
+    role: 'Co-founder, DataFlow',
+  },
+];
+
+const testimonialsKo = [
+  {
+    quote:
+      '더 포텐셜을 통해 스타트업에 딱 맞는 CTO를 찾았습니다. 전문가 검증 시스템이 정말 신뢰감을 줍니다.',
+    author: '김서연',
+    role: 'CEO, 테크벤처',
+  },
+  {
+    quote:
+      '이 플랫폼을 통해 다른 곳에서는 찾을 수 없던 투자 프로그램을 발견했습니다. 정말 게임 체인저입니다.',
+    author: '이준호',
+    role: '대표, 그린스타트',
+  },
+  {
+    quote:
+      '여기 커뮤니티는 정말 든든합니다. 진짜 창업자들이 진짜 경험을 나누는 곳이에요.',
+    author: '박민아',
+    role: '공동창업자, 데이터플로우',
+  },
+];
+
 /**
  * Floating Orb Component
  * Animated background element that floats infinitely
@@ -220,9 +297,11 @@ function FloatingOrb({
  * Hero Section Component
  * Centered layout with floating orbs, pulsating logo, gradient brand text,
  * glowing search bar, and popular tags.
+ * For non-authenticated users, shows a more prominent CTA button.
  */
-function HeroSection() {
+function HeroSection({ isAuthenticated }: { isAuthenticated: boolean }) {
   const t = useTranslations('home');
+  const openLogin = useAuthModalStore((s) => s.openLogin);
 
   // Popular search tags for quick access
   const searchTags = [
@@ -337,14 +416,12 @@ function HeroSection() {
           transition={{ delay: 0.55, duration: 0.4 }}
           className="mb-5 w-full max-w-2xl"
         >
-          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.08] bg-[#121212]/80 px-5 py-4 backdrop-blur-sm transition-all duration-300 focus-within:border-primary/40 focus-within:shadow-[0_0_20px_rgba(0,121,255,0.15)]">
-            <Search className="h-5 w-5 shrink-0 text-[#8B95A1]" />
-            <input
-              type="text"
-              placeholder={t('hero.searchPlaceholder')}
-              className="w-full bg-transparent text-base text-white caret-primary placeholder-[#6B7280] outline-none ring-0 focus:outline-none focus:ring-0 md:text-lg"
-            />
-          </div>
+          <Input
+            type="text"
+            placeholder={t('hero.searchPlaceholder')}
+            leftIcon={<Search className="h-5 w-5" />}
+            className="h-14 rounded-2xl bg-[#121212]/80 text-base backdrop-blur-sm caret-primary transition-all duration-300 md:text-lg focus-visible:ring-primary/40 focus-visible:shadow-[0_0_20px_rgba(0,121,255,0.15)]"
+          />
         </motion.div>
 
         {/* Popular Search Tags */}
@@ -370,6 +447,29 @@ function HeroSection() {
             </Link>
           ))}
         </motion.div>
+
+        {/* Prominent CTA for non-authenticated users */}
+        {!isAuthenticated && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.75, duration: 0.4 }}
+            className="mt-8 flex flex-wrap items-center justify-center gap-4"
+          >
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={openLogin}
+                className="gap-2 px-8 text-base shadow-[0_0_25px_rgba(0,121,255,0.3)]"
+              >
+                <Sparkles className="h-4 w-4" />
+                {t('landing.ctaSection.button')}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
       </motion.div>
     </motion.section>
   );
@@ -524,10 +624,12 @@ function SectionHeader({
   title,
   viewAllHref,
   viewAllLabel,
+  onViewAllClick,
 }: {
   title: string;
-  viewAllHref: string;
+  viewAllHref?: string;
   viewAllLabel: string;
+  onViewAllClick?: () => void;
 }) {
   return (
     <div className="mb-6 flex items-center justify-between">
@@ -535,16 +637,28 @@ function SectionHeader({
         <div className="h-1 w-12 rounded-full bg-gradient-to-r from-primary to-cyan-500 shadow-[0_0_20px_rgba(0,121,255,0.4)]" />
         <h2 className="text-section font-extrabold text-white">{title}</h2>
       </div>
-      <Link href={viewAllHref}>
+      {onViewAllClick ? (
         <Button
           variant="ghost"
           size="sm"
+          onClick={onViewAllClick}
           className="group gap-1.5 text-primary hover:text-cyan-400"
         >
           {viewAllLabel}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
         </Button>
-      </Link>
+      ) : viewAllHref ? (
+        <Link href={viewAllHref}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="group gap-1.5 text-primary hover:text-cyan-400"
+          >
+            {viewAllLabel}
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Button>
+        </Link>
+      ) : null}
     </div>
   );
 }
@@ -557,6 +671,7 @@ function SectionHeader({
 function SupportProgramsSection() {
   const t = useTranslations('home');
   const { isAuthenticated, loading: authLoading } = useAuth();
+  const openLogin = useAuthModalStore((s) => s.openLogin);
   const { data, isLoading, error } = useSupportPrograms({
     showUpcoming: true,
   });
@@ -656,16 +771,15 @@ function SupportProgramsSection() {
                 <p className="text-sm text-muted">
                   {t('signInToSeeMore')}
                 </p>
-                <Link href="/login">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {t('signInButton')}
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
-                </Link>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={openLogin}
+                  className="gap-2"
+                >
+                  {t('signInButton')}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Button>
               </div>
             </div>
           )}
@@ -751,8 +865,9 @@ function TrendingThreadsSection() {
  * Featured Experts CTA Section Component
  * Clean, premium card with horizontal layout and subtle accents
  */
-function FeaturedExpertsCTA() {
+function FeaturedExpertsCTA({ isAuthenticated }: { isAuthenticated: boolean }) {
   const t = useTranslations('home');
+  const openLogin = useAuthModalStore((s) => s.openLogin);
 
   return (
     <motion.section variants={itemVariants} className="mb-16">
@@ -780,16 +895,28 @@ function FeaturedExpertsCTA() {
               opportunities.
             </p>
 
-            <Link href="/experts">
+            {isAuthenticated ? (
+              <Link href="/experts">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="gap-2"
+                >
+                  {t('viewAll')}
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </Button>
+              </Link>
+            ) : (
               <Button
                 variant="primary"
                 size="lg"
+                onClick={openLogin}
                 className="gap-2"
               >
                 {t('viewAll')}
                 <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
               </Button>
-            </Link>
+            )}
           </div>
 
           {/* Right side - Expert avatars visual */}
@@ -819,7 +946,7 @@ function FeaturedExpertsCTA() {
 }
 
 /**
- * Bottom CTA Section
+ * Bottom CTA Section (for authenticated users)
  * Simplified closing engagement prompt with gradient divider
  */
 function BottomCTA() {
@@ -880,10 +1007,412 @@ function BottomCTA() {
   );
 }
 
+// ============================================================================
+// NON-AUTHENTICATED USER SECTIONS
+// ============================================================================
+
+/**
+ * Value Propositions Section (non-auth)
+ * 3 glass-effect cards explaining the platform's core value
+ */
+function ValuePropsSection() {
+  const t = useTranslations('home');
+
+  return (
+    <motion.section variants={itemVariants} className="mb-16">
+      <div className="mb-8 flex flex-col items-center text-center">
+        <div className="mb-4 h-1 w-12 rounded-full bg-gradient-to-r from-primary to-cyan-500 shadow-[0_0_20px_rgba(0,121,255,0.4)]" />
+        <h2 className="text-section font-extrabold text-white">
+          {t('landing.valueProps.title')}
+        </h2>
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {valuePropsConfig.map((prop, index) => {
+          const Icon = prop.icon;
+          return (
+            <motion.div
+              key={prop.key}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.15, duration: 0.5 }}
+            >
+              <motion.div
+                whileHover={{ y: -6 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              >
+                <div
+                  className={cn(
+                    'group relative h-full overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm transition-all duration-300',
+                    prop.borderGlow,
+                    prop.shadowGlow
+                  )}
+                >
+                  {/* Gradient background */}
+                  <div
+                    className={cn(
+                      'absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100',
+                      prop.gradient
+                    )}
+                  />
+
+                  <div className="relative z-10">
+                    <motion.div
+                      className={cn(
+                        'mb-5 flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-300 group-hover:scale-110',
+                        prop.iconBg
+                      )}
+                      whileHover={{
+                        boxShadow: '0 0 20px rgba(0,121,255,0.2)',
+                      }}
+                    >
+                      <Icon className={cn('h-7 w-7', prop.iconColor)} />
+                    </motion.div>
+
+                    <h3 className="mb-3 text-xl font-bold text-white">
+                      {t(`landing.valueProps.${prop.key}.title`)}
+                    </h3>
+                    <p className="text-base leading-relaxed text-[#8B95A1]">
+                      {t(`landing.valueProps.${prop.key}.description`)}
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </motion.section>
+  );
+}
+
+/**
+ * Programs Preview Section (non-auth)
+ * Shows real support programs from the database in read-only mode.
+ * Users can see the list but cannot click, like, or bookmark.
+ */
+function ProgramsPreviewSection() {
+  const t = useTranslations('home');
+  const openLogin = useAuthModalStore((s) => s.openLogin);
+  const { data, isLoading, error } = useSupportPrograms({
+    showUpcoming: true,
+  });
+
+  const programs: SupportProgramWithBookmark[] = data?.programs ?? [];
+
+  return (
+    <motion.section variants={itemVariants} className="mb-16">
+      <SectionHeader
+        title={t('landing.programsPreview.title')}
+        viewAllLabel={t('viewAll')}
+        onViewAllClick={openLogin}
+      />
+
+      <p className="mb-6 text-base text-[#8B95A1]">
+        {t('landing.programsPreview.subtitle')}
+      </p>
+
+      {isLoading ? (
+        <ScrollArea className="w-full whitespace-nowrap">
+          <div className="flex gap-4 pb-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="w-[320px] shrink-0">
+                <Card variant="elevated" padding="none">
+                  <Skeleton className="h-32 w-full" rounded="none" />
+                  <CardContent className="space-y-3 p-4">
+                    <Skeleton className="h-5 w-3/4" rounded="md" />
+                    <Skeleton className="h-4 w-1/2" rounded="md" />
+                    <SkeletonText lines={2} />
+                  </CardContent>
+                </Card>
+              </div>
+            ))}
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
+      ) : error || programs.length === 0 ? (
+        <Card variant="elevated" padding="lg">
+          <CardContent className="py-12 text-center">
+            <FileText className="mx-auto mb-4 h-12 w-12 text-muted" />
+            <p className="text-muted">{t('noActivity')}</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="relative">
+          {/* Gradient fade on right edge */}
+          <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-16 bg-gradient-to-l from-black to-transparent md:w-24" />
+
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex snap-x snap-mandatory gap-4 pb-4">
+              {programs.map((program) => (
+                <div key={program.id} className="snap-start pointer-events-none">
+                  <ProgramCard program={program} />
+                </div>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+
+          {/* Sign-in hint below the carousel */}
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <p className="text-sm text-muted">
+              {t('landing.programsPreview.cta')}
+            </p>
+            <Button variant="primary" size="sm" onClick={openLogin} className="gap-1.5">
+              {t('signInButton')}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
+    </motion.section>
+  );
+}
+
+/**
+ * Testimonials Section (non-auth)
+ * Static testimonial-style cards with glass design and gradient borders
+ */
+function TestimonialsSection({ locale }: { locale: string }) {
+  const t = useTranslations('home');
+  const testimonials = locale === 'ko' ? testimonialsKo : testimonialsEn;
+
+  const cardColors = [
+    {
+      gradient: 'from-blue-500/10 via-transparent to-transparent',
+      border: 'hover:border-blue-500/20',
+      quoteColor: 'text-blue-400/30',
+    },
+    {
+      gradient: 'from-emerald-500/10 via-transparent to-transparent',
+      border: 'hover:border-emerald-500/20',
+      quoteColor: 'text-emerald-400/30',
+    },
+    {
+      gradient: 'from-purple-500/10 via-transparent to-transparent',
+      border: 'hover:border-purple-500/20',
+      quoteColor: 'text-purple-400/30',
+    },
+  ];
+
+  return (
+    <motion.section variants={itemVariants} className="mb-16">
+      <div className="mb-8 flex flex-col items-center text-center">
+        <div className="mb-4 h-1 w-12 rounded-full bg-gradient-to-r from-primary to-cyan-500 shadow-[0_0_20px_rgba(0,121,255,0.4)]" />
+        <h2 className="text-section font-extrabold text-white">
+          {t('landing.testimonials.title')}
+        </h2>
+      </div>
+
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {testimonials.map((testimonial, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: index * 0.15, duration: 0.5 }}
+          >
+            <motion.div
+              whileHover={{ y: -4 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            >
+              <div
+                className={cn(
+                  'group relative h-full overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 backdrop-blur-sm transition-all duration-300',
+                  cardColors[index].border
+                )}
+              >
+                {/* Gradient background */}
+                <div
+                  className={cn(
+                    'absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100',
+                    cardColors[index].gradient
+                  )}
+                />
+
+                <div className="relative z-10">
+                  {/* Quote icon */}
+                  <Quote
+                    className={cn(
+                      'mb-4 h-8 w-8',
+                      cardColors[index].quoteColor
+                    )}
+                  />
+
+                  {/* Quote text */}
+                  <p className="mb-6 text-base leading-relaxed text-[#C4CAD4]">
+                    &ldquo;{testimonial.quote}&rdquo;
+                  </p>
+
+                  {/* Author info */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.08] bg-gradient-to-br from-primary/20 to-primary/5">
+                      <span className="text-sm font-bold text-primary">
+                        {testimonial.author.charAt(0)}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        {testimonial.author}
+                      </p>
+                      <p className="text-xs text-[#8B95A1]">
+                        {testimonial.role}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        ))}
+      </div>
+    </motion.section>
+  );
+}
+
+/**
+ * Landing CTA Section (non-auth)
+ * Strong sign-up / join CTA for non-logged-in users
+ */
+function LandingCTASection() {
+  const t = useTranslations('home');
+  const openLogin = useAuthModalStore((s) => s.openLogin);
+
+  return (
+    <motion.section variants={itemVariants} className="mb-8">
+      {/* Gradient divider line */}
+      <div className="mx-auto mb-10 h-[1px] w-2/3 bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-white/[0.02] p-8 md:p-12"
+      >
+        {/* Background decorations */}
+        <div className="absolute left-1/2 top-0 h-[300px] w-[500px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,121,255,0.12)_0%,transparent_70%)]" />
+        <div className="absolute bottom-0 right-0 h-[200px] w-[300px] translate-x-1/4 translate-y-1/4 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(0,229,255,0.08)_0%,transparent_70%)]" />
+
+        <div className="relative z-10 flex flex-col items-center gap-6 text-center">
+          <motion.div
+            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 shadow-[0_0_30px_rgba(0,121,255,0.2)]"
+            animate={{
+              boxShadow: [
+                '0 0 30px rgba(0,121,255,0.2)',
+                '0 0 40px rgba(0,121,255,0.35)',
+                '0 0 30px rgba(0,121,255,0.2)',
+              ],
+            }}
+            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <Rocket className="h-8 w-8 text-primary" />
+          </motion.div>
+
+          <div className="max-w-lg">
+            <h3 className="mb-3 text-3xl font-bold text-white md:text-4xl">
+              {t('landing.ctaSection.title')}
+            </h3>
+            <p className="text-lg text-[#8B95A1]">
+              {t('landing.ctaSection.subtitle')}
+            </p>
+          </div>
+
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={openLogin}
+              className="gap-2 px-10 text-lg shadow-[0_0_30px_rgba(0,121,255,0.3)]"
+            >
+              {t('landing.ctaSection.button')}
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </motion.div>
+        </div>
+      </motion.div>
+    </motion.section>
+  );
+}
+
+// ============================================================================
+// MAIN PAGE COMPONENT
+// ============================================================================
+
 /**
  * Home Landing Page
+ * Auth-aware landing page showing different content based on login state.
  */
 export default function HomePage() {
+  const { isAuthenticated, loading } = useAuth();
+
+  // Detect locale from the URL path for testimonials
+  const [locale, setLocale] = React.useState('en');
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      if (path.startsWith('/ko')) {
+        setLocale('ko');
+      } else {
+        setLocale('en');
+      }
+    }
+  }, []);
+
+  // Show nothing while auth is loading to avoid layout flash
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <motion.div
+          animate={{ opacity: [0.3, 1, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-[#121212]">
+            <span className="bg-gradient-to-br from-primary to-primary-light bg-clip-text text-2xl font-bold text-transparent">
+              P
+            </span>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    // Logged-in user experience
+    return (
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="py-6"
+      >
+        {/* Hero Section */}
+        <HeroSection isAuthenticated={true} />
+
+        {/* Stats Bar */}
+        <StatsBar />
+
+        {/* Quick Actions */}
+        <QuickActionsSection />
+
+        {/* Support Programs */}
+        <SupportProgramsSection />
+
+        {/* Trending Threads */}
+        <TrendingThreadsSection />
+
+        {/* Featured Experts CTA */}
+        <FeaturedExpertsCTA isAuthenticated={true} />
+
+        {/* Bottom CTA */}
+        <BottomCTA />
+      </motion.div>
+    );
+  }
+
+  // Non-logged-in user experience (static marketing landing)
   return (
     <motion.div
       variants={containerVariants}
@@ -891,26 +1420,26 @@ export default function HomePage() {
       animate="visible"
       className="py-6"
     >
-      {/* Hero Section */}
-      <HeroSection />
+      {/* Hero Section with prominent sign-up CTA */}
+      <HeroSection isAuthenticated={false} />
 
       {/* Stats Bar */}
       <StatsBar />
 
-      {/* Quick Actions */}
-      <QuickActionsSection />
+      {/* Value Propositions */}
+      <ValuePropsSection />
 
-      {/* Support Programs */}
-      <SupportProgramsSection />
+      {/* Static Programs Preview with blurred overlay */}
+      <ProgramsPreviewSection />
 
-      {/* Trending Threads */}
-      <TrendingThreadsSection />
+      {/* Testimonials */}
+      <TestimonialsSection locale={locale} />
 
       {/* Featured Experts CTA */}
-      <FeaturedExpertsCTA />
+      <FeaturedExpertsCTA isAuthenticated={false} />
 
-      {/* Bottom CTA */}
-      <BottomCTA />
+      {/* Landing CTA - strong sign-up prompt */}
+      <LandingCTASection />
     </motion.div>
   );
 }

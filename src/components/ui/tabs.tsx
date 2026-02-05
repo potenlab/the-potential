@@ -160,7 +160,6 @@ function TabsContent({
         // Animation on mount
         "data-[state=active]:animate-in",
         "data-[state=active]:fade-in-0",
-        "data-[state=active]:slide-in-from-bottom-2",
         "data-[state=inactive]:animate-out",
         "data-[state=inactive]:fade-out-0",
         className

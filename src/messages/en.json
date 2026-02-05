@@ -33,6 +33,7 @@
     "upload": "Upload",
     "required": "Required",
     "optional": "Optional",
+    "years": "years",
     "more": "More",
     "less": "Less",
     "show": "Show",
@@ -90,6 +91,8 @@
       "forgotPassword": "Forgot password?",
       "invalidCredentials": "Invalid email or password",
       "loginFailed": "Login failed. Please try again.",
+      "googleLoginFailed": "Google login failed. Please try again.",
+      "pendingApproval": "Your account is pending admin approval. Please wait for approval before signing in.",
       "rememberMe": "Remember me",
       "welcomeBack": "Welcome back, {name}!"
     },
@@ -100,10 +103,6 @@
       "namePlaceholder": "Enter your name",
       "email": "Email",
       "emailPlaceholder": "Enter your email",
-      "password": "Password",
-      "passwordPlaceholder": "Enter your password (min 8 characters)",
-      "confirmPassword": "Confirm Password",
-      "confirmPasswordPlaceholder": "Re-enter your password",
       "companyName": "Company Name",
       "companyPlaceholder": "Enter your company name",
       "position": "Position",
@@ -112,22 +111,15 @@
       "hasAccount": "Already have an account?",
       "login": "Sign In",
       "pendingApproval": "Your application has been submitted. You can access the platform after admin approval.",
-      "termsAgreement": "By signing up, you agree to our {terms} and {privacy}.",
-      "termsOfService": "Terms of Service",
-      "privacyPolicy": "Privacy Policy",
+      "termsAgreement": "By signing up, you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>.",
       "marketingConsent": "Receive marketing communications (optional)",
       "signupSuccess": "Sign up successful!",
-      "signupFailed": "Sign up failed. Please try again."
-    },
-    "otp": {
-      "title": "Enter Verification Code",
-      "subtitle": "Enter the 6-digit code sent to {email}",
-      "resend": "Resend Code",
-      "resendIn": "Resend available in {seconds}s",
-      "invalidCode": "Invalid verification code",
-      "expired": "Verification code has expired. Please request a new one.",
-      "sent": "Verification code sent",
-      "verify": "Verify"
+      "signupFailed": "Sign up failed. Please try again.",
+      "magicLinkSent": "We've sent a magic link to your email",
+      "magicLinkDescription": "Click the link in your email to complete your registration. The link will expire in 1 hour.",
+      "checkSpam": "Didn't receive it? Check your spam folder or resend below.",
+      "resend": "Resend Magic Link",
+      "resendIn": "Resend available in {seconds}s"
     },
     "forgotPassword": {
       "title": "Reset Password",
@@ -195,7 +187,37 @@
     "recentActivity": "Recent Activity",
     "noActivity": "No activity yet",
     "signInToSeeMore": "Sign in to see all support programs",
-    "signInButton": "Sign In"
+    "signInButton": "Sign In",
+    "landing": {
+      "valueProps": {
+        "title": "Everything You Need to Grow",
+        "experts": {
+          "title": "Verified Expert Matching",
+          "description": "Connect with industry-leading professionals who have been verified by our team. Get personalized guidance for your startup."
+        },
+        "programs": {
+          "title": "Support Programs",
+          "description": "Discover funding opportunities, mentoring programs, and co-working spaces tailored for early-stage startups."
+        },
+        "community": {
+          "title": "Founder Community",
+          "description": "Share experiences, ask questions, and build meaningful connections with fellow founders on the same journey."
+        }
+      },
+      "testimonials": {
+        "title": "What Founders Say"
+      },
+      "programsPreview": {
+        "title": "Explore Support Programs",
+        "subtitle": "Access 80+ curated programs for startups",
+        "cta": "Sign in to explore all programs"
+      },
+      "ctaSection": {
+        "title": "Ready to Accelerate Your Startup?",
+        "subtitle": "Join thousands of founders who are building the future together.",
+        "button": "Get Started Free"
+      }
+    }
   },
   "experts": {
     "title": "Find Experts",
@@ -282,6 +304,8 @@
       "sendMessage": "Send Message",
       "share": "Share Profile",
       "report": "Report",
+      "ownProfile": "This is your own expert profile",
+      "loginRequired": "Please log in to contact this expert",
       "noReviews": "No reviews yet",
       "allReviews": "View All Reviews",
       "collaborationNeeds": "Collaboration Needs",
@@ -339,7 +363,9 @@
       },
       "submit": "Send Proposal",
       "success": "Collaboration proposal sent successfully",
-      "failed": "Failed to send collaboration proposal"
+      "failed": "Failed to send collaboration proposal",
+      "failedDetail": "Failed to send proposal: {error}",
+      "notApprovedMember": "Only approved members can send collaboration proposals. Please complete your membership approval first."
     },
     "coffeeChat": {
       "title": "Request Coffee Chat",
@@ -363,7 +389,9 @@
       },
       "submit": "Send Request",
       "success": "Coffee chat request sent successfully",
-      "failed": "Failed to send coffee chat request"
+      "failed": "Failed to send coffee chat request",
+      "failedDetail": "Failed to send request: {error}",
+      "notApprovedMember": "Only approved members can request coffee chats. Please complete your membership approval first."
     },
     "empty": "No experts found matching your criteria",
     "emptyDescription": "Try different search terms or filters",
@@ -701,6 +729,52 @@
       "showPhone": "Show Phone",
       "showCompany": "Show Company"
     },
+    "tabs": {
+      "profile": "Profile",
+      "activity": "Activity",
+      "bookmarks": "Bookmarks"
+    },
+    "activityTab": {
+      "noPosts": "No posts yet",
+      "noPostsDescription": "Posts you create will appear here",
+      "noComments": "No comments yet",
+      "noCommentsDescription": "Comments you write will appear here",
+      "noLikes": "No likes yet",
+      "noLikesDescription": "Posts you like will appear here"
+    },
+    "bookmarksTab": {
+      "programs": "Programs",
+      "unbookmark": "Remove bookmark",
+      "unbookmarkSuccess": "Bookmark removed",
+      "unbookmarkFailed": "Failed to remove bookmark",
+      "closed": "Closed",
+      "urgent": "Closing soon",
+      "noPrograms": "No saved programs",
+      "noProgramsDescription": "Programs you bookmark will appear here",
+      "noPosts": "No saved posts",
+      "noPostsDescription": "Posts you bookmark will appear here"
+    },
+    "collaborationsTab": {
+      "title": "Collaboration Requests",
+      "pending": "Pending",
+      "all": "All Requests",
+      "coffeeChat": "Coffee Chat",
+      "collaboration": "Collaboration",
+      "accept": "Accept",
+      "decline": "Decline",
+      "accepted": "Accepted",
+      "declined": "Declined",
+      "cancelled": "Cancelled",
+      "pendingStatus": "Pending",
+      "respondSuccess": "Response sent successfully",
+      "respondFailed": "Failed to send response",
+      "noRequests": "No collaboration requests yet",
+      "noRequestsDescription": "When someone sends you a collaboration proposal or coffee chat request, it will appear here",
+      "noPendingRequests": "No pending requests",
+      "noPendingDescription": "You're all caught up!",
+      "from": "From",
+      "receivedAt": "Received"
+    },
     "updateSuccess": "Profile updated successfully",
     "updateFailed": "Failed to update profile"
   },
@@ -714,7 +788,9 @@
       "programs": "Programs",
       "reports": "Reports",
       "analytics": "Analytics",
-      "settings": "Settings"
+      "settings": "Settings",
+      "logout": "Logout",
+      "signingOut": "Signing out..."
     },
     "dashboard": {
       "overview": "Overview",

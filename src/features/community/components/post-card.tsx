@@ -350,9 +350,17 @@ export function PostCard({
                 e.stopPropagation();
                 handleBookmarkClick();
               }}
-              className="text-muted hover:text-white"
+              className={cn(
+                'text-muted hover:text-white',
+                post.is_bookmarked && 'text-yellow-500 hover:text-yellow-400'
+              )}
             >
-              <Bookmark className="h-4 w-4" />
+              <Bookmark
+                className={cn(
+                  'h-4 w-4 transition-all duration-200',
+                  post.is_bookmarked && 'fill-current'
+                )}
+              />
               <span className="sr-only">{t('bookmark')}</span>
             </Button>
           </div>

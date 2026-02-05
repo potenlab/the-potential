@@ -14,7 +14,7 @@ import { createClient, routeConfig } from '@/lib/supabase/middleware';
  * 3. Redirect based on auth state and route requirements
  *
  * Route protection:
- * - Protected routes: Require authentication, redirect to /[locale]/login if not authenticated
+ * - Protected routes: Handled client-side by AuthGuard (opens auth modal)
  * - Auth routes (login, signup): Redirect authenticated users to /[locale]/home
  * - Admin routes: Require admin role, redirect non-admins to /[locale]/home
  */
@@ -62,8 +62,9 @@ export async function middleware(request: NextRequest) {
       pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
   );
 
-  // If the route doesn't need auth checks, return the intl response
-  if (!isProtectedRoute && !isAuthRoute && !isAdminRoute) {
+  // Protected routes are handled client-side by AuthGuard (opens auth modal)
+  // Only run server-side auth checks for auth routes and admin routes
+  if (!isAuthRoute && !isAdminRoute) {
     return intlResponse;
   }
 
@@ -88,13 +89,6 @@ export async function middleware(request: NextRequest) {
 
   // Step 3: Apply route protection logic
 
-  // Redirect unauthenticated users from protected routes to login
-  if (!user && isProtectedRoute) {
-    const loginUrl = new URL(`/${locale}/login`, request.url);
-    loginUrl.searchParams.set('redirectTo', pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
   // Redirect authenticated users from auth routes (login, signup) to home
   if (user && isAuthRoute) {
     return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
@@ -104,9 +98,7 @@ export async function middleware(request: NextRequest) {
   if (isAdminRoute) {
     // Unauthenticated users trying to access admin routes
     if (!user) {
-      const loginUrl = new URL(`/${locale}/login`, request.url);
-      loginUrl.searchParams.set('redirectTo', pathname);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL(`/${locale}`, request.url));
     }
 
     // Fetch user profile to check role

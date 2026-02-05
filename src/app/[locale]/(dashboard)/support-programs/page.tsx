@@ -190,8 +190,8 @@ export default function SupportProgramsPage() {
   const [selectedCategory, setSelectedCategory] = React.useState<ProgramCategory | 'all'>('all');
   const [debouncedKeyword, setDebouncedKeyword] = React.useState<string | undefined>(undefined);
 
-  // Modal state
-  const [selectedProgram, setSelectedProgram] = React.useState<SupportProgramWithBookmark | null>(null);
+  // Modal state - store ID only so bookmark state stays synced with query cache
+  const [selectedProgramId, setSelectedProgramId] = React.useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
   // Debounced search to avoid too many requests
@@ -226,7 +226,7 @@ export default function SupportProgramsPage() {
 
   // Handle program card click - open modal
   const handleProgramClick = (program: SupportProgramWithBookmark) => {
-    setSelectedProgram(program);
+    setSelectedProgramId(program.id);
     setIsModalOpen(true);
   };
 
@@ -235,7 +235,7 @@ export default function SupportProgramsPage() {
     setIsModalOpen(open);
     if (!open) {
       // Small delay before clearing selected program for smooth animation
-      setTimeout(() => setSelectedProgram(null), 200);
+      setTimeout(() => setSelectedProgramId(null), 200);
     }
   };
 
@@ -253,6 +253,12 @@ export default function SupportProgramsPage() {
 
   const programs = data?.programs ?? [];
   const totalCount = data?.totalCount ?? 0;
+
+  // Derive selected program from latest query data so bookmark state stays in sync
+  const selectedProgram = React.useMemo(
+    () => programs.find((p) => p.id === selectedProgramId) ?? null,
+    [programs, selectedProgramId]
+  );
 
   return (
     <div className="py-6 md:py-8">

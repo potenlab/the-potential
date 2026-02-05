@@ -383,12 +383,15 @@ export function useBookmarkMutation() {
 
         return { action: 'unbookmarked' as const, programId };
       } else {
-        // Bookmark: insert a new bookmark
-        const { error } = await supabase.from('bookmarks').insert({
-          user_id: user.id,
-          bookmarkable_type: 'support_program',
-          bookmarkable_id: programId,
-        });
+        // Bookmark: upsert to handle duplicate gracefully
+        const { error } = await supabase.from('bookmarks').upsert(
+          {
+            user_id: user.id,
+            bookmarkable_type: 'support_program',
+            bookmarkable_id: programId,
+          },
+          { onConflict: 'user_id,bookmarkable_type,bookmarkable_id' }
+        );
 
         if (error) {
           throw new Error(`Failed to bookmark: ${error.message}`);
@@ -405,40 +408,80 @@ export function useBookmarkMutation() {
       await queryClient.cancelQueries({
         queryKey: supportProgramQueryKeys.detail(programId),
       });
+      await queryClient.cancelQueries({
+        queryKey: bookmarkQueryKeys.programs(),
+      });
 
       // Snapshot previous values
-      const previousPrograms = queryClient.getQueriesData({
+      const previousListQueries = queryClient.getQueriesData<SupportProgramListResponse>({
         queryKey: supportProgramQueryKeys.lists(),
       });
       const previousProgram = queryClient.getQueryData<SupportProgramWithBookmark>(
         supportProgramQueryKeys.detail(programId)
       );
-
-      // Optimistically update single program if cached
-      queryClient.setQueryData<SupportProgramWithBookmark>(
-        supportProgramQueryKeys.detail(programId),
-        (old) => {
-          if (!old) return old;
-
-          return {
-            ...old,
-            is_bookmarked: !isCurrentlyBookmarked,
-            bookmark_count: isCurrentlyBookmarked
-              ? Math.max(0, old.bookmark_count - 1)
-              : old.bookmark_count + 1,
-          };
-        }
+      const previousBookmarked = queryClient.getQueryData<SupportProgramWithBookmark[]>(
+        bookmarkQueryKeys.programs()
       );
 
+      // Helper to update a program in-place
+      const updateProgram = (p: SupportProgramWithBookmark): SupportProgramWithBookmark => {
+        if (p.id !== programId) return p;
+        return {
+          ...p,
+          is_bookmarked: !isCurrentlyBookmarked,
+          bookmark_count: isCurrentlyBookmarked
+            ? Math.max(0, p.bookmark_count - 1)
+            : p.bookmark_count + 1,
+        };
+      };
+
+      // Optimistically update single program detail if cached
+      if (previousProgram) {
+        queryClient.setQueryData<SupportProgramWithBookmark>(
+          supportProgramQueryKeys.detail(programId),
+          updateProgram(previousProgram)
+        );
+      }
+
+      // Optimistically update all list queries that contain this program
+      for (const [queryKey, data] of previousListQueries) {
+        if (!data) continue;
+        queryClient.setQueryData<SupportProgramListResponse>(queryKey, {
+          ...data,
+          programs: data.programs.map(updateProgram),
+        });
+      }
+
+      // Optimistically update bookmarked programs list
+      if (previousBookmarked) {
+        if (isCurrentlyBookmarked) {
+          queryClient.setQueryData<SupportProgramWithBookmark[]>(
+            bookmarkQueryKeys.programs(),
+            previousBookmarked.filter((p) => p.id !== programId)
+          );
+        }
+      }
+
       // Return context with snapshot for rollback
-      return { previousPrograms, previousProgram };
+      return { previousListQueries, previousProgram, previousBookmarked };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, variables, context) => {
       // Rollback on error
       if (context?.previousProgram) {
         queryClient.setQueryData(
           supportProgramQueryKeys.detail(variables.programId),
           context.previousProgram
+        );
+      }
+      if (context?.previousListQueries) {
+        for (const [queryKey, data] of context.previousListQueries) {
+          queryClient.setQueryData(queryKey, data);
+        }
+      }
+      if (context?.previousBookmarked) {
+        queryClient.setQueryData(
+          bookmarkQueryKeys.programs(),
+          context.previousBookmarked
         );
       }
     },

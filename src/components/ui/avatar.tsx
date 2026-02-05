@@ -7,7 +7,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/cn"
 
 const avatarSizeVariants = cva(
-  "relative flex shrink-0 overflow-hidden rounded-full select-none",
+  "relative flex shrink-0 rounded-full select-none",
   {
     variants: {
       size: {
@@ -81,7 +81,7 @@ const Avatar = React.forwardRef<
 ))
 Avatar.displayName = AvatarPrimitive.Root.displayName
 
-const avatarImageVariants = cva("aspect-square size-full object-cover")
+const avatarImageVariants = cva("aspect-square size-full object-cover overflow-hidden rounded-full")
 
 const AvatarImage = React.forwardRef<
   React.ComponentRef<typeof AvatarPrimitive.Image>,
@@ -97,7 +97,7 @@ const AvatarImage = React.forwardRef<
 AvatarImage.displayName = AvatarPrimitive.Image.displayName
 
 const avatarFallbackVariants = cva(
-  "flex size-full items-center justify-center rounded-full bg-card text-muted font-medium",
+  "flex size-full items-center justify-center rounded-full overflow-hidden bg-card text-muted font-medium",
   {
     variants: {
       size: {

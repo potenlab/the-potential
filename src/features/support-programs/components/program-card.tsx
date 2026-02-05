@@ -17,12 +17,13 @@
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
-import { Calendar, Building2, ExternalLink } from 'lucide-react';
+import { Calendar, Building2, ExternalLink, Bookmark, BookmarkCheck } from 'lucide-react';
 
 import { cn } from '@/lib/cn';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+import { useBookmarkMutation } from '../api/queries';
 import type { ProgramCardProps } from '../types';
 
 /**
@@ -120,12 +121,20 @@ function DeadlineBadge({
  */
 export function ProgramCard({ program, className, onClick, fullWidth = false }: ProgramCardProps) {
   const t = useTranslations('supportPrograms.card');
+  const bookmarkMutation = useBookmarkMutation();
 
-  const { title, organization, category, application_deadline, image_url, description } = program;
+  const { title, organization, category, application_deadline, image_url, description, is_bookmarked } = program;
 
   const deadlineInfo = application_deadline ? calculateDaysRemaining(application_deadline) : null;
   const isClosed = deadlineInfo?.isClosed ?? false;
-  const is_featured = false; // Featured flag not in current schema, default to false
+
+  const handleBookmarkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    bookmarkMutation.mutate({
+      programId: program.id,
+      isCurrentlyBookmarked: is_bookmarked,
+    });
+  };
 
   return (
     <motion.div
@@ -137,11 +146,11 @@ export function ProgramCard({ program, className, onClick, fullWidth = false }: 
       className={cn('shrink-0', fullWidth && 'w-full')}
     >
       <Card
-        variant={is_featured ? 'glow' : 'interactive'}
+        variant={is_bookmarked ? 'glow' : 'interactive'}
         padding="none"
         className={cn(
           'group h-full cursor-pointer overflow-hidden transition-all duration-300',
-          is_featured && 'border-primary/50',
+          is_bookmarked && 'hover:scale-[1.02]',
           isClosed && 'opacity-75',
           className
         )}
@@ -170,16 +179,53 @@ export function ProgramCard({ program, className, onClick, fullWidth = false }: 
                 {category}
               </Badge>
             </div>
+            {/* Bookmark Button - Positioned over image */}
+            <button
+              type="button"
+              onClick={handleBookmarkClick}
+              disabled={bookmarkMutation.isPending}
+              className={cn(
+                'absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200',
+                is_bookmarked
+                  ? 'bg-primary/90 text-white shadow-lg shadow-primary/25'
+                  : 'bg-black/40 text-white/80 backdrop-blur-sm hover:bg-black/60 hover:text-white'
+              )}
+              aria-label={is_bookmarked ? t('bookmarked') : t('bookmark')}
+            >
+              {is_bookmarked ? (
+                <BookmarkCheck className="h-4 w-4" />
+              ) : (
+                <Bookmark className="h-4 w-4" />
+              )}
+            </button>
           </div>
         )}
 
         <CardContent className="p-4">
-          {/* Category Badge - If no image */}
+          {/* Category Badge + Bookmark - If no image */}
           {!image_url && (
-            <div className="mb-3">
+            <div className="mb-3 flex items-center justify-between">
               <Badge variant="default" size="sm">
                 {category}
               </Badge>
+              <button
+                type="button"
+                onClick={handleBookmarkClick}
+                disabled={bookmarkMutation.isPending}
+                className={cn(
+                  'flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200',
+                  is_bookmarked
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-muted hover:bg-white/10 hover:text-white'
+                )}
+                aria-label={is_bookmarked ? t('bookmarked') : t('bookmark')}
+              >
+                {is_bookmarked ? (
+                  <BookmarkCheck className="h-4 w-4" />
+                ) : (
+                  <Bookmark className="h-4 w-4" />
+                )}
+              </button>
             </div>
           )}
 
@@ -220,11 +266,19 @@ export function ProgramCard({ program, className, onClick, fullWidth = false }: 
               {!application_deadline && <span>{t('upcoming')}</span>}
             </div>
 
-            {/* View Details Link */}
-            <span className="flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100">
-              {t('viewDetails')}
-              <ExternalLink className="h-3 w-3" />
-            </span>
+            {/* Saved indicator + View Details */}
+            <div className="flex items-center gap-2">
+              {is_bookmarked && (
+                <span className="flex items-center gap-1 text-xs text-primary">
+                  <BookmarkCheck className="h-3 w-3" />
+                  {t('bookmarked')}
+                </span>
+              )}
+              <span className="flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                {t('viewDetails')}
+                <ExternalLink className="h-3 w-3" />
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>

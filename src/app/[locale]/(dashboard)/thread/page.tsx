@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button';
 
 // Community Feature Components
 import { PostComposer, PostCard } from '@/features/community/components';
-import { usePosts, useLikeMutation } from '@/features/community/api/queries';
+import { usePosts, useLikeMutation, useBookmarkMutation } from '@/features/community/api/queries';
 import { useRouter } from '@/i18n/navigation';
 
 /**
@@ -108,8 +108,9 @@ export default function ThreadFeedPage() {
     refetch,
   } = usePosts();
 
-  // Like mutation
+  // Mutations
   const likeMutation = useLikeMutation();
+  const bookmarkMutation = useBookmarkMutation();
 
   // Intersection observer for infinite scroll
   const { ref: loadMoreRef, inView } = useInView({
@@ -146,6 +147,16 @@ export default function ThreadFeedPage() {
   // Handle post click - navigate to post detail
   const handlePostClick = (postId: number) => {
     router.push(`/thread/${postId}`);
+  };
+
+  // Handle bookmark action
+  const handleBookmark = (postId: number) => {
+    const post = posts.find((p) => p.id === postId);
+    if (!post) return;
+    bookmarkMutation.mutate({
+      postId,
+      isCurrentlyBookmarked: post.is_bookmarked,
+    });
   };
 
   // Handle share action
@@ -217,6 +228,7 @@ export default function ThreadFeedPage() {
                 onLike={handleLike}
                 onComment={handleComment}
                 onShare={handleShare}
+                onBookmark={handleBookmark}
                 onClick={handlePostClick}
                 isLiking={
                   likeMutation.isPending &&

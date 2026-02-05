@@ -121,10 +121,10 @@ export function NotificationPopover() {
           className="text-[#8B95A1] hover:text-white relative"
           aria-label={navT('notifications')}
         >
-          <Bell className="h-5 w-5" />
+          <Bell className="h-6 w-6" />
           {/* Notification badge - shows unread count from realtime subscription */}
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-[#FF453A] rounded-full text-[10px] font-bold flex items-center justify-center text-white">
+            <span className="absolute -top-0.5 -right-0.5 h-5 w-5 bg-[#FF453A] rounded-full text-[11px] font-bold flex items-center justify-center text-white">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}

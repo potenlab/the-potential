@@ -37,6 +37,7 @@ export interface Post {
 export interface PostWithAuthor extends Post {
   author: Author;
   is_liked: boolean;
+  is_bookmarked: boolean;
 }
 
 /**
@@ -145,4 +146,9 @@ export const commentQueryKeys = {
 export const likeQueryKeys = {
   all: ['likes'] as const,
   userLikes: (userId: string) => [...likeQueryKeys.all, 'user', userId] as const,
+} as const;
+
+export const bookmarkQueryKeys = {
+  all: ['bookmarks'] as const,
+  user: (userId: string) => [...bookmarkQueryKeys.all, 'user', userId] as const,
 } as const;

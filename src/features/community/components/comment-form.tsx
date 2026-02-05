@@ -160,7 +160,7 @@ export function CommentForm({
         )}
 
         {/* Textarea and Submit */}
-        <div className="flex items-end gap-2">
+        <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <textarea
               ref={textareaRef}
@@ -172,7 +172,7 @@ export function CommentForm({
               rows={1}
               maxLength={MAX_COMMENT_LENGTH}
               className={cn(
-                'w-full resize-none rounded-2xl bg-card border border-white/8 px-4 py-3',
+                'w-full resize-none overflow-hidden rounded-2xl bg-card border border-white/8 px-4 py-3',
                 'text-white placeholder:text-muted',
                 'transition-colors duration-200',
                 'hover:border-white/20 focus:border-primary focus:outline-none focus:ring-0',
@@ -186,13 +186,13 @@ export function CommentForm({
           <Button
             type="submit"
             variant="primary"
-            size={isReply ? 'icon-sm' : 'icon'}
+            size="icon-sm"
             disabled={!canSubmit || isSubmitting}
             loading={isSubmitting}
-            className="shrink-0"
+            className="shrink-0 rounded-full"
             aria-label={t('submit')}
           >
-            <SendHorizontal className="h-4 w-4" />
+            {!isSubmitting && <SendHorizontal className="h-4 w-4" />}
           </Button>
         </div>
 

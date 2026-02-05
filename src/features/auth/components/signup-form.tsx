@@ -15,12 +15,7 @@ import {
   CardContent,
   CardFooter,
 } from '@/components/ui/card';
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from '@/components/ui/input-otp';
-import { Link, useRouter } from '@/i18n/navigation';
+import { Link } from '@/i18n/navigation';
 import { supabase } from '@/lib/supabase/client';
 import { cn } from '@/lib/cn';
 
@@ -28,77 +23,62 @@ import { cn } from '@/lib/cn';
  * Signup Form Component
  *
  * Features:
- * - Multi-step signup flow: Account -> Profile -> OTP Verification
- * - Email/password registration with Supabase Auth
- * - Profile creation with name and company
- * - OTP email verification
+ * - Two-step magic link signup flow: Form -> Confirmation
+ * - Collects email + profile info (name, company, position)
+ * - Sends magic link via Supabase signInWithOtp
+ * - Shows confirmation screen with resend option
  * - Internationalized labels and error messages
  * - Customized UI components from design system
  */
 
-type SignupStep = 'account' | 'profile' | 'otp';
-
-interface AccountFormData {
-  email: string;
-  password: string;
-  confirmPassword: string;
+interface SignupFormProps {
+  /** When provided, the "Log in" link calls this instead of navigating */
+  onSwitchToLogin?: () => void;
+  /** Called after successful signup (in addition to router.push) */
+  onSuccess?: () => void;
+  /** When true, renders without the Card wrapper (for use inside a Dialog) */
+  isModal?: boolean;
 }
 
-interface ProfileFormData {
+type SignupStep = 'form' | 'confirmation';
+
+interface SignupFormData {
+  email: string;
   name: string;
   companyName: string;
   position?: string;
 }
 
-// OTP resend cooldown in seconds
-const OTP_RESEND_COOLDOWN = 60;
+// Magic link resend cooldown in seconds
+const RESEND_COOLDOWN = 60;
 
-export function SignupForm() {
+export function SignupForm({ onSwitchToLogin, onSuccess, isModal }: SignupFormProps = {}) {
   const t = useTranslations('auth.signup');
-  const tOtp = useTranslations('auth.otp');
   const tValidation = useTranslations('validation');
   const tCommon = useTranslations('common');
-  const router = useRouter();
 
-  // Multi-step state
-  const [currentStep, setCurrentStep] = React.useState<SignupStep>('account');
+  // Step state
+  const [currentStep, setCurrentStep] = React.useState<SignupStep>('form');
   const [isLoading, setIsLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Data collected across steps
-  const [accountData, setAccountData] = React.useState<AccountFormData | null>(
-    null
-  );
+  // Store submitted email for confirmation screen
+  const [submittedEmail, setSubmittedEmail] = React.useState('');
 
-  // OTP state
-  const [otpValue, setOtpValue] = React.useState('');
+  // Resend cooldown state
   const [resendCooldown, setResendCooldown] = React.useState(0);
 
-  // Validation schemas
-  const accountSchema = React.useMemo(
-    () =>
-      z
-        .object({
-          email: z
-            .string()
-            .min(1, tValidation('required'))
-            .email(tValidation('email')),
-          password: z
-            .string()
-            .min(1, tValidation('required'))
-            .min(8, tValidation('minLength', { min: 8 })),
-          confirmPassword: z.string().min(1, tValidation('required')),
-        })
-        .refine((data) => data.password === data.confirmPassword, {
-          message: tValidation('passwordMismatch'),
-          path: ['confirmPassword'],
-        }),
-    [tValidation]
-  );
+  // Store form data for resend
+  const [formData, setFormData] = React.useState<SignupFormData | null>(null);
 
-  const profileSchema = React.useMemo(
+  // Validation schema
+  const signupSchema = React.useMemo(
     () =>
       z.object({
+        email: z
+          .string()
+          .min(1, tValidation('required'))
+          .email(tValidation('email')),
         name: z
           .string()
           .min(1, tValidation('required'))
@@ -112,20 +92,15 @@ export function SignupForm() {
     [tValidation]
   );
 
-  // Account form
-  const accountForm = useForm<AccountFormData>({
-    resolver: zodResolver(accountSchema),
+  // Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       email: '',
-      password: '',
-      confirmPassword: '',
-    },
-  });
-
-  // Profile form
-  const profileForm = useForm<ProfileFormData>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: {
       name: '',
       companyName: '',
       position: '',
@@ -142,128 +117,74 @@ export function SignupForm() {
     }
   }, [resendCooldown]);
 
-  // Step 1: Account submission
-  const onAccountSubmit = async (data: AccountFormData) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Store account data and move to profile step
-      setAccountData(data);
-      setCurrentStep('profile');
-    } catch {
-      setError(t('signupFailed'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Step 2: Profile submission -> Create account + send OTP
-  const onProfileSubmit = async (data: ProfileFormData) => {
-    if (!accountData) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Create user account with Supabase Auth
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: accountData.email,
-        password: accountData.password,
-        options: {
-          data: {
-            name: data.name,
-            company_name: data.companyName,
-            position: data.position || null,
-            approval_status: 'pending', // User needs admin approval
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+  // Send magic link
+  const sendMagicLink = async (data: SignupFormData) => {
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: data.email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          name: data.name,
+          company_name: data.companyName,
+          position: data.position || null,
+          approval_status: 'pending',
         },
-      });
+      },
+    });
 
-      if (signUpError) {
-        setError(signUpError.message);
-        return;
+    if (otpError) {
+      throw otpError;
+    }
+  };
+
+  // Form submission
+  const onFormSubmit = async (data: SignupFormData) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await sendMagicLink(data);
+
+      // Store data for resend and move to confirmation
+      setFormData(data);
+      setSubmittedEmail(data.email);
+      setCurrentStep('confirmation');
+      setResendCooldown(RESEND_COOLDOWN);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(t('signupFailed'));
       }
-
-      // Move to OTP verification step
-      setCurrentStep('otp');
-      setResendCooldown(OTP_RESEND_COOLDOWN);
-    } catch {
-      setError(t('signupFailed'));
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Step 3: OTP verification
-  const onOtpSubmit = async () => {
-    if (!accountData || otpValue.length !== 6) return;
+  // Resend magic link
+  const handleResend = async () => {
+    if (!formData || resendCooldown > 0) return;
 
     setIsLoading(true);
     setError(null);
 
     try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: accountData.email,
-        token: otpValue,
-        type: 'signup',
-      });
-
-      if (verifyError) {
-        setError(tOtp('invalidCode'));
-        return;
+      await sendMagicLink(formData);
+      setResendCooldown(RESEND_COOLDOWN);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(t('signupFailed'));
       }
-
-      // Redirect to pending approval page or home
-      router.push('/home');
-    } catch {
-      setError(tOtp('invalidCode'));
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  // Resend OTP
-  const handleResendOtp = async () => {
-    if (!accountData || resendCooldown > 0) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const { error: resendError } = await supabase.auth.resend({
-        type: 'signup',
-        email: accountData.email,
-      });
-
-      if (resendError) {
-        setError(resendError.message);
-        return;
-      }
-
-      setResendCooldown(OTP_RESEND_COOLDOWN);
-      setOtpValue('');
-    } catch {
-      setError(t('signupFailed'));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Go back to previous step
-  const handleBack = () => {
-    setError(null);
-    if (currentStep === 'profile') {
-      setCurrentStep('account');
-    } else if (currentStep === 'otp') {
-      setCurrentStep('profile');
     }
   };
 
   // Step indicator component
   const StepIndicator = () => {
-    const steps: SignupStep[] = ['account', 'profile', 'otp'];
+    const steps: SignupStep[] = ['form', 'confirmation'];
     const currentIndex = steps.indexOf(currentStep);
 
     return (
@@ -292,9 +213,9 @@ export function SignupForm() {
     );
   };
 
-  // Render Account Step
-  const renderAccountStep = () => (
-    <form onSubmit={accountForm.handleSubmit(onAccountSubmit)} className="space-y-4">
+  // Render Form Step
+  const renderFormStep = () => (
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
       {error && (
         <div className="p-3 rounded-2xl bg-[#FF453A]/10 border border-[#FF453A]/20">
           <p className="text-sm text-[#FF453A] text-center">{error}</p>
@@ -306,26 +227,35 @@ export function SignupForm() {
         type="email"
         placeholder={t('emailPlaceholder')}
         autoComplete="email"
-        error={accountForm.formState.errors.email?.message}
-        {...accountForm.register('email')}
+        error={errors.email?.message}
+        {...register('email')}
       />
 
       <Input
-        label={t('password')}
-        type="password"
-        placeholder={t('passwordPlaceholder')}
-        autoComplete="new-password"
-        error={accountForm.formState.errors.password?.message}
-        {...accountForm.register('password')}
+        label={t('name')}
+        type="text"
+        placeholder={t('namePlaceholder')}
+        autoComplete="name"
+        error={errors.name?.message}
+        {...register('name')}
       />
 
       <Input
-        label={t('confirmPassword')}
-        type="password"
-        placeholder={t('confirmPasswordPlaceholder')}
-        autoComplete="new-password"
-        error={accountForm.formState.errors.confirmPassword?.message}
-        {...accountForm.register('confirmPassword')}
+        label={t('companyName')}
+        type="text"
+        placeholder={t('companyPlaceholder')}
+        autoComplete="organization"
+        error={errors.companyName?.message}
+        {...register('companyName')}
+      />
+
+      <Input
+        label={`${t('position')} (${tCommon('optional')})`}
+        type="text"
+        placeholder={t('positionPlaceholder')}
+        autoComplete="organization-title"
+        error={errors.position?.message}
+        {...register('position')}
       />
 
       <Button
@@ -335,73 +265,13 @@ export function SignupForm() {
         className="w-full"
         loading={isLoading}
       >
-        {tCommon('next')}
+        {t('submit')}
       </Button>
     </form>
   );
 
-  // Render Profile Step
-  const renderProfileStep = () => (
-    <form onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
-      {error && (
-        <div className="p-3 rounded-2xl bg-[#FF453A]/10 border border-[#FF453A]/20">
-          <p className="text-sm text-[#FF453A] text-center">{error}</p>
-        </div>
-      )}
-
-      <Input
-        label={t('name')}
-        type="text"
-        placeholder={t('namePlaceholder')}
-        autoComplete="name"
-        error={profileForm.formState.errors.name?.message}
-        {...profileForm.register('name')}
-      />
-
-      <Input
-        label={t('companyName')}
-        type="text"
-        placeholder={t('companyPlaceholder')}
-        autoComplete="organization"
-        error={profileForm.formState.errors.companyName?.message}
-        {...profileForm.register('companyName')}
-      />
-
-      <Input
-        label={`${t('position')} (${tCommon('optional')})`}
-        type="text"
-        placeholder={t('positionPlaceholder')}
-        autoComplete="organization-title"
-        error={profileForm.formState.errors.position?.message}
-        {...profileForm.register('position')}
-      />
-
-      <div className="flex gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          size="lg"
-          className="flex-1"
-          onClick={handleBack}
-          disabled={isLoading}
-        >
-          {tCommon('back')}
-        </Button>
-        <Button
-          type="submit"
-          variant="primary-glow"
-          size="lg"
-          className="flex-1"
-          loading={isLoading}
-        >
-          {t('submit')}
-        </Button>
-      </div>
-    </form>
-  );
-
-  // Render OTP Step
-  const renderOtpStep = () => (
+  // Render Confirmation Step
+  const renderConfirmationStep = () => (
     <div className="space-y-6">
       {error && (
         <div className="p-3 rounded-2xl bg-[#FF453A]/10 border border-[#FF453A]/20">
@@ -409,61 +279,53 @@ export function SignupForm() {
         </div>
       )}
 
-      <div className="flex flex-col items-center gap-4">
-        <InputOTP
-          maxLength={6}
-          value={otpValue}
-          onChange={(value) => setOtpValue(value)}
-          disabled={isLoading}
-        >
-          <InputOTPGroup>
-            <InputOTPSlot index={0} className="h-12 w-12 text-lg" />
-            <InputOTPSlot index={1} className="h-12 w-12 text-lg" />
-            <InputOTPSlot index={2} className="h-12 w-12 text-lg" />
-            <InputOTPSlot index={3} className="h-12 w-12 text-lg" />
-            <InputOTPSlot index={4} className="h-12 w-12 text-lg" />
-            <InputOTPSlot index={5} className="h-12 w-12 text-lg" />
-          </InputOTPGroup>
-        </InputOTP>
+      <div className="flex flex-col items-center gap-4 text-center">
+        {/* Email icon */}
+        <div className="w-16 h-16 rounded-full bg-[#0079FF]/10 flex items-center justify-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8 text-[#0079FF]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+            />
+          </svg>
+        </div>
 
-        <button
-          type="button"
-          onClick={handleResendOtp}
-          disabled={resendCooldown > 0 || isLoading}
-          className={cn(
-            'text-sm transition-colors',
-            resendCooldown > 0
-              ? 'text-[#8B95A1] cursor-not-allowed'
-              : 'text-[#0079FF] hover:underline'
-          )}
-        >
-          {resendCooldown > 0
-            ? tOtp('resendIn', { seconds: resendCooldown })
-            : tOtp('resend')}
-        </button>
-      </div>
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-white">
+            {t('magicLinkSent')}
+          </h3>
+          <p className="text-sm text-[#8B95A1]">
+            {submittedEmail}
+          </p>
+          <p className="text-sm text-[#8B95A1]">
+            {t('magicLinkDescription')}
+          </p>
+        </div>
 
-      <div className="flex gap-3">
+        <p className="text-xs text-[#8B95A1]">
+          {t('checkSpam')}
+        </p>
+
         <Button
           type="button"
           variant="outline"
           size="lg"
-          className="flex-1"
-          onClick={handleBack}
-          disabled={isLoading}
-        >
-          {tCommon('back')}
-        </Button>
-        <Button
-          type="button"
-          variant="primary-glow"
-          size="lg"
-          className="flex-1"
-          onClick={onOtpSubmit}
+          className="w-full"
+          onClick={handleResend}
+          disabled={resendCooldown > 0 || isLoading}
           loading={isLoading}
-          disabled={otpValue.length !== 6}
         >
-          {tOtp('verify')}
+          {resendCooldown > 0
+            ? t('resendIn', { seconds: resendCooldown })
+            : t('resend')}
         </Button>
       </div>
     </div>
@@ -472,41 +334,103 @@ export function SignupForm() {
   // Get step title and subtitle
   const getStepContent = () => {
     switch (currentStep) {
-      case 'account':
+      case 'form':
         return {
           title: t('title'),
           subtitle: t('subtitle'),
         };
-      case 'profile':
+      case 'confirmation':
         return {
-          title: t('title'),
-          subtitle: t('subtitle'),
-        };
-      case 'otp':
-        return {
-          title: tOtp('title'),
-          subtitle: tOtp('subtitle', { email: accountData?.email || '' }),
+          title: t('magicLinkSent'),
+          subtitle: '',
         };
     }
   };
 
   const stepContent = getStepContent();
 
+  const headerContent = (
+    <div className="text-center space-y-2">
+      <StepIndicator />
+      <h2 className="text-2xl font-bold tracking-tight text-white">{stepContent.title}</h2>
+      {stepContent.subtitle && (
+        <p className="text-base text-muted">{stepContent.subtitle}</p>
+      )}
+    </div>
+  );
+
+  const stepBody = (
+    <>
+      {currentStep === 'form' && renderFormStep()}
+      {currentStep === 'confirmation' && renderConfirmationStep()}
+    </>
+  );
+
+  const footerContent = currentStep === 'form' ? (
+    <div className="flex flex-col items-center gap-4 pt-2">
+      {/* Terms agreement text */}
+      <p className="text-xs text-[#8B95A1] text-center">
+        {t.rich('termsAgreement', {
+          terms: (chunks) => (
+            <Link href="/terms" className="text-[#0079FF] hover:underline">
+              {chunks}
+            </Link>
+          ),
+          privacy: (chunks) => (
+            <Link href="/privacy" className="text-[#0079FF] hover:underline">
+              {chunks}
+            </Link>
+          ),
+        })}
+      </p>
+
+      {/* Login link */}
+      <p className="text-sm text-[#8B95A1]">
+        {t('hasAccount')}{' '}
+        {onSwitchToLogin ? (
+          <button
+            type="button"
+            onClick={onSwitchToLogin}
+            className="text-[#0079FF] hover:underline"
+          >
+            {t('login')}
+          </button>
+        ) : (
+          <Link href="/login" className="text-[#0079FF] hover:underline">
+            {t('login')}
+          </Link>
+        )}
+      </p>
+    </div>
+  ) : null;
+
+  // Modal mode: render without Card wrapper (Dialog provides the chrome)
+  if (isModal) {
+    return (
+      <div className="space-y-6">
+        {headerContent}
+        {stepBody}
+        {footerContent}
+      </div>
+    );
+  }
+
+  // Page mode: render with Card wrapper
   return (
     <Card variant="elevated" padding="lg" className="w-full max-w-md">
       <CardHeader className="text-center space-y-2">
         <StepIndicator />
         <CardTitle className="text-2xl">{stepContent.title}</CardTitle>
-        <CardDescription>{stepContent.subtitle}</CardDescription>
+        {stepContent.subtitle && (
+          <CardDescription>{stepContent.subtitle}</CardDescription>
+        )}
       </CardHeader>
 
       <CardContent>
-        {currentStep === 'account' && renderAccountStep()}
-        {currentStep === 'profile' && renderProfileStep()}
-        {currentStep === 'otp' && renderOtpStep()}
+        {stepBody}
       </CardContent>
 
-      {currentStep === 'account' && (
+      {currentStep === 'form' && (
         <CardFooter className="flex-col gap-4">
           {/* Terms agreement text */}
           <p className="text-xs text-[#8B95A1] text-center">
@@ -527,9 +451,19 @@ export function SignupForm() {
           {/* Login link */}
           <p className="text-sm text-[#8B95A1]">
             {t('hasAccount')}{' '}
-            <Link href="/login" className="text-[#0079FF] hover:underline">
-              {t('login')}
-            </Link>
+            {onSwitchToLogin ? (
+              <button
+                type="button"
+                onClick={onSwitchToLogin}
+                className="text-[#0079FF] hover:underline"
+              >
+                {t('login')}
+              </button>
+            ) : (
+              <Link href="/login" className="text-[#0079FF] hover:underline">
+                {t('login')}
+              </Link>
+            )}
           </p>
         </CardFooter>
       )}
