@@ -37,6 +37,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/lib/supabase/client';
 
 import type { Database } from '@/types/database';
@@ -68,6 +69,7 @@ interface EditAboutDialogProps {
   onOpenChange: (open: boolean) => void;
   profile: Profile;
   onSuccess: (updatedProfile: Partial<Profile>) => void;
+  isLoading?: boolean;
 }
 
 export function EditAboutDialog({
@@ -75,6 +77,7 @@ export function EditAboutDialog({
   onOpenChange,
   profile,
   onSuccess,
+  isLoading,
 }: EditAboutDialogProps) {
   const t = useTranslations('profile');
   const tValidation = useTranslations('validation');
@@ -136,82 +139,110 @@ export function EditAboutDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="full_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.name')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your full name"
-                      leftIcon={<User className="h-4 w-4" />}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {isLoading ? (
+          <div className="space-y-4">
+            {/* Field 1: Name */}
+            <div className="space-y-2">
+              <Skeleton variant="lighter" className="h-4 w-20" />
+              <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="company_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.company')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your company name"
-                      leftIcon={<Building2 className="h-4 w-4" />}
-                      {...field}
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Field 2: Company */}
+            <div className="space-y-2">
+              <Skeleton variant="lighter" className="h-4 w-28" />
+              <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="bio"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.bio')}</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Tell us about yourself..."
-                      className="min-h-[100px]"
-                      {...field}
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Field 3: Bio */}
+            <div className="space-y-2">
+              <Skeleton variant="lighter" className="h-4 w-16" />
+              <Skeleton variant="lighter" className="h-[100px] w-full rounded-xl" />
+            </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
-                {tCommon('cancel')}
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                loading={form.formState.isSubmitting}
-              >
-                {tCommon('save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            {/* Footer buttons */}
+            <div className="flex justify-end gap-2">
+              <Skeleton variant="lighter" className="h-10 w-20" />
+              <Skeleton variant="lighter" className="h-10 w-20" />
+            </div>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <FormField
+                control={form.control}
+                name="full_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fields.name')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your full name"
+                        leftIcon={<User className="h-4 w-4" />}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="company_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fields.company')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your company name"
+                        leftIcon={<Building2 className="h-4 w-4" />}
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="bio"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fields.bio')}</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Tell us about yourself..."
+                        className="min-h-[100px]"
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => onOpenChange(false)}
+                >
+                  {tCommon('cancel')}
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={form.formState.isSubmitting}
+                >
+                  {tCommon('save')}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );

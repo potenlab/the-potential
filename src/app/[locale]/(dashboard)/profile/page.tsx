@@ -35,6 +35,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/cn';
 import { supabase } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton, SkeletonAvatar } from '@/components/ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -132,7 +133,7 @@ function InfoRow({
 
   return (
     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-      <p className="text-xs text-muted">{label}</p>
+      <p className="text-sm text-muted">{label}</p>
       <div className="mt-1 flex items-center gap-2">
         {Icon && <Icon className="h-4 w-4 text-muted" />}
         {href && value ? (
@@ -306,11 +307,81 @@ export default function ProfilePage() {
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          <p className="text-muted">{tCommon('loading')}</p>
+      <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
+        {/* Title skeleton */}
+        <div>
+          <Skeleton className="h-8 w-48" rounded="md" />
+          <Skeleton className="mt-2 h-4 w-80" rounded="md" />
         </div>
+
+        {/* Profile header card skeleton */}
+        <Card variant="elevated" padding="lg">
+          <CardContent className="flex flex-col items-center gap-6 md:flex-row md:items-start">
+            {/* Avatar placeholder with glow effect area */}
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-white/5 blur-xl scale-110" />
+              <SkeletonAvatar size="xl" className="relative border-4 border-card" />
+            </div>
+
+            {/* Profile info */}
+            <div className="flex-1 text-center md:text-left">
+              <Skeleton className="h-7 w-48" rounded="md" />
+              <Skeleton className="mt-1 h-4 w-32" rounded="md" />
+              <Skeleton className="mt-2 h-4 w-40" rounded="md" />
+              <Skeleton className="mt-3 h-6 w-20 rounded-full" />
+            </div>
+
+            {/* Completeness card */}
+            <div className="w-full md:w-48">
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
+                <Skeleton className="h-4 w-24" rounded="md" />
+                <Skeleton className="mt-2 h-8 w-16" rounded="md" />
+                <Skeleton className="mt-3 h-2 w-full rounded-full" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Profile sections card skeleton */}
+        <Card variant="default" padding="none">
+          {/* About section row */}
+          <div className="flex items-center gap-2 border-b border-white/[0.08] px-6 py-4">
+            <Skeleton className="h-5 w-5 rounded-md" />
+            <Skeleton className="h-5 w-24" rounded="md" />
+            <div className="flex-1" />
+            <Skeleton className="h-5 w-5" rounded="md" />
+          </div>
+          {/* Expertise section row */}
+          <div className="flex items-center gap-2 border-b border-white/[0.08] px-6 py-4">
+            <Skeleton className="h-5 w-5 rounded-md" />
+            <Skeleton className="h-5 w-24" rounded="md" />
+            <div className="flex-1" />
+            <Skeleton className="h-5 w-5" rounded="md" />
+          </div>
+          {/* Social links section row */}
+          <div className="flex items-center gap-2 px-6 py-4">
+            <Skeleton className="h-5 w-5 rounded-md" />
+            <Skeleton className="h-5 w-24" rounded="md" />
+            <div className="flex-1" />
+            <Skeleton className="h-5 w-5" rounded="md" />
+          </div>
+        </Card>
+
+        {/* Activity card skeleton */}
+        <Card variant="default" padding="lg">
+          <Skeleton className="h-6 w-32" rounded="md" />
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center"
+              >
+                <Skeleton className="mx-auto h-8 w-12" rounded="md" />
+                <Skeleton className="mx-auto mt-1 h-3 w-16" rounded="md" />
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
     );
   }
@@ -333,7 +404,7 @@ export default function ProfilePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h1 className="text-3xl font-bold text-white">{t('title')}</h1>
+        <h1 className="text-4xl font-bold text-white">{t('title')}</h1>
         <p className="mt-2 text-muted">{t('completenessDescription')}</p>
       </motion.div>
 
@@ -394,7 +465,7 @@ export default function ProfilePage() {
             {/* Profile Info */}
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
-                <h2 className="text-2xl font-bold text-white">
+                <h2 className="text-3xl font-bold text-white">
                   {profile.full_name || 'Anonymous User'}
                 </h2>
                 {profile.approval_status === 'approved' && (
@@ -414,7 +485,7 @@ export default function ProfilePage() {
                 <p className="mt-1 text-muted">{profile.company_name}</p>
               )}
 
-              <p className="mt-2 text-sm text-muted">{profile.email}</p>
+              <p className="mt-2 text-base text-muted">{profile.email}</p>
 
               {/* Role badge */}
               <div className="mt-3">
@@ -431,7 +502,7 @@ export default function ProfilePage() {
             {/* Completeness */}
             <div className="w-full md:w-48">
               <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                <p className="text-sm font-medium text-muted">
+                <p className="text-base font-medium text-muted">
                   {t('completeness')}
                 </p>
                 <div className="mt-2 flex items-end gap-2">
@@ -455,7 +526,7 @@ export default function ProfilePage() {
                   <Button
                     variant="link"
                     size="sm"
-                    className="mt-2 p-0 h-auto text-xs"
+                    className="mt-2 p-0 h-auto text-sm"
                   >
                     {t('completeProfile')}
                   </Button>
@@ -561,7 +632,7 @@ export default function ProfilePage() {
                       )}
                       {expertise.skills && expertise.skills.length > 0 && (
                         <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                          <p className="text-xs text-muted">
+                          <p className="text-sm text-muted">
                             {t('sections.skills')}
                           </p>
                           <div className="mt-2 flex flex-wrap gap-2">
@@ -576,7 +647,7 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                      <p className="text-sm text-muted">
+                      <p className="text-base text-muted">
                         No expertise information added yet.
                       </p>
                       <Button
@@ -668,7 +739,7 @@ export default function ProfilePage() {
                     </div>
                   ) : (
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                      <p className="text-sm text-muted">
+                      <p className="text-base text-muted">
                         No social links added yet.
                       </p>
                       <Button
@@ -702,21 +773,21 @@ export default function ProfilePage() {
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
               <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
                 <p className="text-2xl font-bold text-white">0</p>
-                <p className="mt-1 text-xs text-muted">{t('activity.posts')}</p>
+                <p className="mt-1 text-sm text-muted">{t('activity.posts')}</p>
               </div>
               <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
                 <p className="text-2xl font-bold text-white">0</p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-sm text-muted">
                   {t('activity.comments')}
                 </p>
               </div>
               <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
                 <p className="text-2xl font-bold text-white">0</p>
-                <p className="mt-1 text-xs text-muted">{t('activity.likes')}</p>
+                <p className="mt-1 text-sm text-muted">{t('activity.likes')}</p>
               </div>
               <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
                 <p className="text-2xl font-bold text-white">0</p>
-                <p className="mt-1 text-xs text-muted">
+                <p className="mt-1 text-sm text-muted">
                   {t('activity.bookmarks')}
                 </p>
               </div>

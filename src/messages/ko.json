@@ -61,6 +61,7 @@
     "profile": "프로필",
     "notifications": "알림",
     "signOut": "로그아웃",
+    "signingOut": "로그아웃 중...",
     "settings": "설정",
     "help": "도움말",
     "admin": "관리자",
@@ -68,7 +69,8 @@
     "expertRegistration": "전문가 등록",
     "menu": "메뉴",
     "openMenu": "메뉴 열기",
-    "closeMenu": "메뉴 닫기"
+    "closeMenu": "메뉴 닫기",
+    "login": "로그인"
   },
   "auth": {
     "login": {
@@ -159,6 +161,20 @@
       "afternoon": "좋은 오후에요, {name}님!",
       "evening": "좋은 저녁이에요, {name}님!"
     },
+    "hero": {
+      "headlineTop": "연결을 넘어 성과로,",
+      "headlineBrand": "더포텐셜",
+      "subtitleLine1": "창업가들의 실시간 인사이트와 검증된 정보를 한곳에서.",
+      "subtitleLine2": "당신의 성장을 가속화하는 창업 커뮤니티 플랫폼",
+      "activeFounders": "지금 {count}명의 창업가가 함께하고 있습니다",
+      "searchPlaceholder": "관심있는 지원사업, 파트너, 클럽을 검색해보세요",
+      "popularSearches": "인기 검색:",
+      "searchTags": {
+        "seed": "시드 투자",
+        "cto": "CTO 파트너",
+        "startup": "초기창업패키지"
+      }
+    },
     "latestPrograms": "최신 지원 프로그램",
     "trendingThreads": "인기 쓰레드",
     "featuredExperts": "추천 전문가",
@@ -177,7 +193,9 @@
       "collaborations": "성사된 협업"
     },
     "recentActivity": "최근 활동",
-    "noActivity": "아직 활동이 없습니다"
+    "noActivity": "아직 활동이 없습니다",
+    "signInToSeeMore": "모든 지원 프로그램을 보려면 로그인하세요",
+    "signInButton": "로그인"
   },
   "experts": {
     "title": "전문가 찾기",

@@ -37,6 +37,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Validation schema
 const urlSchema = z
@@ -103,6 +104,7 @@ interface EditSocialDialogProps {
   currentValues: SocialLinks;
   profileId: string;
   onSuccess: (updatedValues: SocialLinks) => void;
+  isLoading?: boolean;
 }
 
 export function EditSocialDialog({
@@ -111,6 +113,7 @@ export function EditSocialDialog({
   currentValues,
   profileId,
   onSuccess,
+  isLoading,
 }: EditSocialDialogProps) {
   const t = useTranslations('profile');
   const tCommon = useTranslations('common');
@@ -172,111 +175,148 @@ export function EditSocialDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.website')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="https://yourwebsite.com"
-                      leftIcon={<Globe className="h-4 w-4" />}
-                      {...field}
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {isLoading ? (
+          <div className="space-y-4">
+            {/* Field 1: Website */}
+            <div className="space-y-2">
+              <Skeleton variant="lighter" className="h-4 w-20" />
+              <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="linkedin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.linkedin')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="linkedin.com/in/username"
-                      leftIcon={<Linkedin className="h-4 w-4" />}
-                      {...field}
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs text-muted">
-                    Full URL or just your username
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Field 2: LinkedIn */}
+            <div className="space-y-2">
+              <Skeleton variant="lighter" className="h-4 w-20" />
+              <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
+              <Skeleton variant="lighter" className="h-3 w-40" />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="twitter"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.twitter')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="@username"
-                      leftIcon={<Twitter className="h-4 w-4" />}
-                      {...field}
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs text-muted">
-                    Your Twitter/X handle
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Field 3: Twitter */}
+            <div className="space-y-2">
+              <Skeleton variant="lighter" className="h-4 w-16" />
+              <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
+              <Skeleton variant="lighter" className="h-3 w-36" />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="github"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.github')}</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="github.com/username"
-                      leftIcon={<Github className="h-4 w-4" />}
-                      {...field}
-                      value={field.value || ''}
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs text-muted">
-                    Full URL or just your username
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Field 4: GitHub */}
+            <div className="space-y-2">
+              <Skeleton variant="lighter" className="h-4 w-16" />
+              <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
+              <Skeleton variant="lighter" className="h-3 w-40" />
+            </div>
 
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => onOpenChange(false)}
-              >
-                {tCommon('cancel')}
-              </Button>
-              <Button
-                type="submit"
-                variant="primary"
-                loading={form.formState.isSubmitting}
-              >
-                {tCommon('save')}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            {/* Footer skeleton */}
+            <div className="flex justify-end gap-2">
+              <Skeleton variant="lighter" className="h-10 w-20" />
+              <Skeleton variant="lighter" className="h-10 w-20" />
+            </div>
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fields.website')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="https://yourwebsite.com"
+                        leftIcon={<Globe className="h-4 w-4" />}
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="linkedin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fields.linkedin')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="linkedin.com/in/username"
+                        leftIcon={<Linkedin className="h-4 w-4" />}
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-sm text-muted">
+                      Full URL or just your username
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="twitter"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fields.twitter')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="@username"
+                        leftIcon={<Twitter className="h-4 w-4" />}
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-sm text-muted">
+                      Your Twitter/X handle
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="github"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('fields.github')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="github.com/username"
+                        leftIcon={<Github className="h-4 w-4" />}
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-sm text-muted">
+                      Full URL or just your username
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => onOpenChange(false)}
+                >
+                  {tCommon('cancel')}
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  loading={form.formState.isSubmitting}
+                >
+                  {tCommon('save')}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        )}
       </DialogContent>
     </Dialog>
   );

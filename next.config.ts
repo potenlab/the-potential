@@ -40,6 +40,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com', // Google profile images
       },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos', // Placeholder images
+      },
     ],
   },
   // Enable compression for better transfer speeds

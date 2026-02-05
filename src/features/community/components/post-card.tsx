@@ -102,7 +102,7 @@ function MediaGrid({ urls, alt }: { urls: string[]; alt: string }) {
             src={url}
             alt={`${alt} - image ${index + 1}`}
             fill
-            className="object-cover transition-transform duration-200 hover:scale-105"
+            className="object-cover"
             sizes={urls.length === 1 ? '(max-width: 640px) 100vw, 640px' : '320px'}
           />
           {/* Show overlay for 4+ images on the 4th image */}
@@ -160,7 +160,7 @@ function ActionButton({
         )}
       />
       {count !== undefined && count > 0 && (
-        <span className="text-xs tabular-nums">{count}</span>
+        <span className="text-sm tabular-nums">{count}</span>
       )}
       <span className="sr-only">{label}</span>
     </Button>
@@ -219,7 +219,7 @@ export function PostCard({
       <Card
         variant="interactive"
         padding="none"
-        className={cn('overflow-hidden', className)}
+        className={cn('overflow-hidden hover:!scale-100', className)}
         onClick={handleCardClick}
         role="article"
         aria-label={`Post by ${post.author.full_name || 'Unknown'}`}
@@ -251,7 +251,7 @@ export function PostCard({
                     </Badge>
                   )}
                 </div>
-                <div className="flex items-center gap-2 text-sm text-muted">
+                <div className="flex items-center gap-2 text-base text-muted">
                   {post.author.company_name && (
                     <>
                       <span>{post.author.company_name}</span>

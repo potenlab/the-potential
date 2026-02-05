@@ -1,22 +1,12 @@
-import { use } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
-import { redirect } from 'next/navigation';
-
-/**
- * Home Page (Locale Root)
- *
- * Redirects authenticated users to /home dashboard.
- * Redirects unauthenticated users to /login.
- * Uses next-intl for internationalization.
- */
+import LandingPageClient from './landing-page-client';
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
 }
 
-// Generate metadata for SEO
 export async function generateMetadata({
   params,
 }: {
@@ -37,13 +27,9 @@ export async function generateMetadata({
   };
 }
 
-export default function HomePage({ params }: HomePageProps) {
-  const { locale } = use(params);
-
-  // Enable static rendering - MUST be called before useTranslations
+export default async function HomePage({ params }: HomePageProps) {
+  const { locale } = await params;
   setRequestLocale(locale);
 
-  // Redirect to login page for now
-  // TODO: Add auth check - redirect to /home if authenticated
-  redirect(`/${locale}/login`);
+  return <LandingPageClient />;
 }

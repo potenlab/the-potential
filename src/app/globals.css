@@ -64,15 +64,15 @@
   /* ============================================
      TYPOGRAPHY - Font Sizes
      ============================================ */
-  --font-size-display: 3rem; /* 48px */
-  --font-size-h1: 2.5rem; /* 40px */
-  --font-size-h2: 2rem; /* 32px */
-  --font-size-h3: 1.5rem; /* 24px */
-  --font-size-section: 1.25rem; /* 20px */
-  --font-size-body-lg: 1.125rem; /* 18px */
-  --font-size-body: 1rem; /* 16px */
-  --font-size-body-sm: 0.875rem; /* 14px */
-  --font-size-caption: 0.75rem; /* 12px */
+  --font-size-display: 4rem; /* 64px */
+  --font-size-h1: 3.25rem; /* 52px */
+  --font-size-h2: 2.5rem; /* 40px */
+  --font-size-h3: 1.875rem; /* 30px */
+  --font-size-section: 1.5rem; /* 24px */
+  --font-size-body-lg: 1.25rem; /* 20px */
+  --font-size-body: 1.125rem; /* 18px */
+  --font-size-body-sm: 1rem; /* 16px */
+  --font-size-caption: 0.875rem; /* 14px */
 
   /* ============================================
      TYPOGRAPHY - Line Heights
@@ -94,21 +94,21 @@
   --letter-spacing-wide: 0.01em;
 
   /* ============================================
-     SPACING - 8px Base Unit
+     SPACING - Scaled Up Base Unit
      ============================================ */
   --space-0: 0px;
   --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-  --space-16: 64px;
-  --space-20: 80px;
-  --space-24: 96px;
+  --space-2: 10px;
+  --space-3: 14px;
+  --space-4: 20px;
+  --space-5: 24px;
+  --space-6: 28px;
+  --space-8: 40px;
+  --space-10: 48px;
+  --space-12: 56px;
+  --space-16: 72px;
+  --space-20: 96px;
+  --space-24: 112px;
 
   /* ============================================
      BORDER RADIUS - Toss-style Large Curves

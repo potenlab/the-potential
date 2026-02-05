@@ -99,7 +99,7 @@ function MediaGrid({ urls, alt }: { urls: string[]; alt: string }) {
             src={url}
             alt={`${alt} - image ${index + 1}`}
             fill
-            className="object-cover transition-transform duration-200 hover:scale-105"
+            className="object-cover"
             sizes={urls.length === 1 ? '(max-width: 640px) 100vw, 640px' : '320px'}
           />
           {/* Show overlay for 4+ images on the 4th image */}
@@ -191,7 +191,7 @@ function PostNotFound() {
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
           <MessageCircle className="h-8 w-8 text-muted" />
         </div>
-        <h2 className="text-xl font-semibold text-white mb-2">{t('title')}</h2>
+        <h2 className="text-2xl font-semibold text-white mb-2">{t('title')}</h2>
         <p className="text-muted mb-6">{t('description')}</p>
         <Button variant="primary" asChild>
           <Link href="/thread">{t('backHome')}</Link>
@@ -384,7 +384,7 @@ export default function PostDetailPage() {
 
                 <div className="flex flex-col gap-0.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-white text-lg">
+                    <span className="font-semibold text-white text-xl">
                       {post.author.full_name || 'Unknown User'}
                     </span>
                     {post.is_pinned && (
@@ -393,7 +393,7 @@ export default function PostDetailPage() {
                       </Badge>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted">
+                  <div className="flex items-center gap-2 text-base text-muted">
                     {post.author.company_name && (
                       <>
                         <span>{post.author.company_name}</span>
@@ -436,7 +436,7 @@ export default function PostDetailPage() {
 
             {/* Content - Full display without truncation */}
             <div className="mt-4">
-              <p className="whitespace-pre-wrap text-white text-base leading-relaxed">
+              <p className="whitespace-pre-wrap text-white text-lg leading-relaxed">
                 {post.content}
               </p>
             </div>
