@@ -289,7 +289,8 @@ export async function getExpertDocumentUrl(filePath: string): Promise<string> {
     .createSignedUrl(filePath, 3600); // 1 hour expiry
 
   if (error) {
-    throw new Error(`Failed to get document URL: ${error.message}`);
+    console.warn(`Failed to get document URL for "${filePath}": ${error.message}`);
+    return '';
   }
 
   return data.signedUrl;

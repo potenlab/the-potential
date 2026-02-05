@@ -8,6 +8,8 @@
  * - Editable sections using Dialog-based forms
  * - Changes persist to database via Supabase
  * - Profile photo upload capability
+ * - Activity stats with real data from useUserActivity
+ * - Stacked sections: Profile details, Activity, Bookmarks
  * - Uses Avatar, Badge, Progress, Accordion from @/components/ui/
  * - All labels use translations from useTranslations('profile')
  */
@@ -51,7 +53,12 @@ import {
   EditAboutDialog,
   EditSocialDialog,
   EditExpertiseDialog,
+  ActivityTab,
+  BookmarksTab,
+  CollaborationsTab,
 } from '@/features/profile/components';
+
+import { useUserActivity } from '@/features/profile/api/queries';
 
 import type { Database } from '@/types/database';
 
@@ -228,6 +235,9 @@ export default function ProfilePage() {
     fetchProfile();
   }, [fetchProfile]);
 
+  // Fetch activity stats with real data
+  const { data: activityStats } = useUserActivity(profile?.id);
+
   // Handle avatar upload
   const handleAvatarUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -342,31 +352,6 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Profile sections card skeleton */}
-        <Card variant="default" padding="none">
-          {/* About section row */}
-          <div className="flex items-center gap-2 border-b border-white/[0.08] px-6 py-4">
-            <Skeleton className="h-5 w-5 rounded-md" />
-            <Skeleton className="h-5 w-24" rounded="md" />
-            <div className="flex-1" />
-            <Skeleton className="h-5 w-5" rounded="md" />
-          </div>
-          {/* Expertise section row */}
-          <div className="flex items-center gap-2 border-b border-white/[0.08] px-6 py-4">
-            <Skeleton className="h-5 w-5 rounded-md" />
-            <Skeleton className="h-5 w-24" rounded="md" />
-            <div className="flex-1" />
-            <Skeleton className="h-5 w-5" rounded="md" />
-          </div>
-          {/* Social links section row */}
-          <div className="flex items-center gap-2 px-6 py-4">
-            <Skeleton className="h-5 w-5 rounded-md" />
-            <Skeleton className="h-5 w-24" rounded="md" />
-            <div className="flex-1" />
-            <Skeleton className="h-5 w-5" rounded="md" />
-          </div>
-        </Card>
-
         {/* Activity card skeleton */}
         <Card variant="default" padding="lg">
           <Skeleton className="h-6 w-32" rounded="md" />
@@ -380,6 +365,46 @@ export default function ProfilePage() {
                 <Skeleton className="mx-auto mt-1 h-3 w-16" rounded="md" />
               </div>
             ))}
+          </div>
+        </Card>
+
+        {/* Profile sections skeleton */}
+        <Card variant="default" padding="none">
+          <div className="flex items-center gap-2 border-b border-white/[0.08] px-6 py-4">
+            <Skeleton className="h-5 w-5 rounded-md" />
+            <Skeleton className="h-5 w-24" rounded="md" />
+            <div className="flex-1" />
+            <Skeleton className="h-5 w-5" rounded="md" />
+          </div>
+          <div className="flex items-center gap-2 border-b border-white/[0.08] px-6 py-4">
+            <Skeleton className="h-5 w-5 rounded-md" />
+            <Skeleton className="h-5 w-24" rounded="md" />
+            <div className="flex-1" />
+            <Skeleton className="h-5 w-5" rounded="md" />
+          </div>
+          <div className="flex items-center gap-2 px-6 py-4">
+            <Skeleton className="h-5 w-5 rounded-md" />
+            <Skeleton className="h-5 w-24" rounded="md" />
+            <div className="flex-1" />
+            <Skeleton className="h-5 w-5" rounded="md" />
+          </div>
+        </Card>
+
+        {/* Activity skeleton */}
+        <Card variant="default" padding="lg">
+          <Skeleton className="h-6 w-32" rounded="md" />
+          <div className="mt-4 space-y-3">
+            <Skeleton className="h-20 w-full" rounded="xl" />
+            <Skeleton className="h-20 w-full" rounded="xl" />
+          </div>
+        </Card>
+
+        {/* Bookmarks skeleton */}
+        <Card variant="default" padding="lg">
+          <Skeleton className="h-6 w-32" rounded="md" />
+          <div className="mt-4 space-y-3">
+            <Skeleton className="h-20 w-full" rounded="xl" />
+            <Skeleton className="h-20 w-full" rounded="xl" />
           </div>
         </Card>
       </div>
@@ -537,11 +562,56 @@ export default function ProfilePage() {
         </Card>
       </motion.div>
 
-      {/* Profile Sections */}
+      {/* Activity Stats */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
+      >
+        <Card variant="default" padding="lg">
+          <CardHeader>
+            <CardTitle>{t('activity.title')}</CardTitle>
+          </CardHeader>
+          <CardContent className="mt-4">
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
+                <p className="text-2xl font-bold text-white">
+                  {activityStats?.postCount ?? 0}
+                </p>
+                <p className="mt-1 text-sm text-muted">{t('activity.posts')}</p>
+              </div>
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
+                <p className="text-2xl font-bold text-white">
+                  {activityStats?.commentCount ?? 0}
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  {t('activity.comments')}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
+                <p className="text-2xl font-bold text-white">
+                  {activityStats?.likeCount ?? 0}
+                </p>
+                <p className="mt-1 text-sm text-muted">{t('activity.likes')}</p>
+              </div>
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
+                <p className="text-2xl font-bold text-white">
+                  {activityStats?.bookmarkCount ?? 0}
+                </p>
+                <p className="mt-1 text-sm text-muted">
+                  {t('activity.bookmarks')}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Profile Details */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
       >
         <Card variant="default" padding="none">
           <Accordion type="multiple" defaultValue={['about']} className="w-full">
@@ -759,41 +829,33 @@ export default function ProfilePage() {
         </Card>
       </motion.div>
 
+      {/* Collaboration Requests Section (Expert only) */}
+      {profile.role === 'expert' && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+        >
+          <CollaborationsTab userId={profile.id} />
+        </motion.div>
+      )}
+
       {/* Activity Section */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.3 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: profile.role === 'expert' ? 0.5 : 0.4 }}
       >
-        <Card variant="default" padding="lg">
-          <CardHeader>
-            <CardTitle>{t('activity.title')}</CardTitle>
-          </CardHeader>
-          <CardContent className="mt-4">
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
-                <p className="text-2xl font-bold text-white">0</p>
-                <p className="mt-1 text-sm text-muted">{t('activity.posts')}</p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
-                <p className="text-2xl font-bold text-white">0</p>
-                <p className="mt-1 text-sm text-muted">
-                  {t('activity.comments')}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
-                <p className="text-2xl font-bold text-white">0</p>
-                <p className="mt-1 text-sm text-muted">{t('activity.likes')}</p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
-                <p className="text-2xl font-bold text-white">0</p>
-                <p className="mt-1 text-sm text-muted">
-                  {t('activity.bookmarks')}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <ActivityTab userId={profile.id} />
+      </motion.div>
+
+      {/* Bookmarks Section */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: profile.role === 'expert' ? 0.6 : 0.5 }}
+      >
+        <BookmarksTab userId={profile.id} />
       </motion.div>
 
       {/* Edit Dialogs */}

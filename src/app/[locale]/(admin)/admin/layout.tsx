@@ -1,26 +1,24 @@
 'use client';
 
-import { ReactNode, useState } from 'react';
-import { usePathname, Link } from '@/i18n/navigation';
+import { ReactNode, useState, useCallback } from 'react';
+import { usePathname, Link, useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import {
   LayoutDashboard,
   Users,
   UserCheck,
   FileText,
-  FolderKanban,
-  Flag,
-  BarChart3,
-  Settings,
   ChevronLeft,
   ChevronRight,
   Shield,
   Menu,
   X,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/lib/supabase/client';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -56,17 +54,31 @@ const navItems: NavItem[] = [
   { key: 'members', href: '/admin/members', icon: Users },
   { key: 'experts', href: '/admin/experts', icon: UserCheck },
   { key: 'content', href: '/admin/content', icon: FileText },
-  { key: 'programs', href: '/admin/programs', icon: FolderKanban },
-  { key: 'reports', href: '/admin/reports', icon: Flag },
-  { key: 'analytics', href: '/admin/analytics', icon: BarChart3 },
-  { key: 'settings', href: '/admin/settings', icon: Settings },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const t = useTranslations('admin');
   const pathname = usePathname();
+  const router = useRouter();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      setIsSigningOut(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Sign out error:', error.message);
+        return;
+      }
+      router.push('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    } finally {
+      setIsSigningOut(false);
+    }
+  }, [router]);
 
   const isActiveRoute = (href: string) => {
     // Exact match for dashboard, prefix match for other routes
@@ -167,18 +179,21 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         )}
 
         {/* Sidebar Footer */}
-        {!isCollapsed && (
-          <div className="border-t border-white/5 p-4">
-            <div className="rounded-xl bg-violet-600/10 p-3">
-              <p className="text-xs text-violet-400">
-                Admin Zone
-              </p>
-              <p className="mt-1 text-xs text-[#8B95A1]">
-                Manage platform content and users
-              </p>
-            </div>
-          </div>
-        )}
+        <div className="border-t border-white/5 p-2">
+          <button
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            className={cn(
+              'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#FF453A] transition-all duration-200 hover:bg-[#FF453A]/10 disabled:opacity-50',
+              isCollapsed && 'justify-center px-2'
+            )}
+          >
+            <LogOut className="h-5 w-5 shrink-0" />
+            {!isCollapsed && (
+              <span>{isSigningOut ? t('sidebar.signingOut') : t('sidebar.logout')}</span>
+            )}
+          </button>
+        </div>
       </aside>
 
       {/* Mobile Sidebar */}
@@ -239,13 +254,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </ScrollArea>
 
         {/* Mobile Sidebar Footer */}
-        <div className="border-t border-white/5 p-4">
-          <div className="rounded-xl bg-violet-600/10 p-3">
-            <p className="text-xs text-violet-400">Admin Zone</p>
-            <p className="mt-1 text-xs text-[#8B95A1]">
-              Manage platform content and users
-            </p>
-          </div>
+        <div className="border-t border-white/5 p-2">
+          <button
+            onClick={handleSignOut}
+            disabled={isSigningOut}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-[#FF453A] transition-all duration-200 hover:bg-[#FF453A]/10 disabled:opacity-50"
+          >
+            <LogOut className="h-5 w-5 shrink-0" />
+            <span>{isSigningOut ? t('sidebar.signingOut') : t('sidebar.logout')}</span>
+          </button>
         </div>
       </aside>
 

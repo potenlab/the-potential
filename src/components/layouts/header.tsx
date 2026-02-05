@@ -8,6 +8,7 @@ import { LogOut, Home, TrendingUp, MessageCircle, UserSearch, LogIn } from 'luci
 import { cn } from '@/lib/cn';
 import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
+import { useAuthModalStore } from '@/stores/auth-modal-store';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -52,7 +53,8 @@ export function Header() {
   const t = useTranslations('navigation');
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, loading } = useAuth();
+  const openLogin = useAuthModalStore((s) => s.openLogin);
 
   // Track which nav item is hovered for potential future hover effects
   const [, setHoveredItem] = React.useState<string | null>(null);
@@ -69,8 +71,8 @@ export function Header() {
         console.error('Sign out error:', error.message);
         return;
       }
-      // Redirect to login page after successful sign out
-      router.push('/login');
+      // Redirect to homepage after successful sign out
+      router.push('/');
     } catch (error) {
       console.error('Sign out error:', error);
     } finally {
@@ -133,7 +135,7 @@ export function Header() {
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-4 md:gap-5">
           {/* Language Switcher */}
           <LanguageSwitcher />
 
@@ -149,20 +151,20 @@ export function Header() {
                     className="focus:outline-none focus:ring-2 focus:ring-[#0079FF] rounded-full transition-transform hover:scale-105"
                     aria-label={t('profile')}
                   >
-                    <Avatar size="sm" showStatus statusColor="success">
-                      <AvatarImage src="/placeholder-avatar.jpg" alt="Profile" />
-                      <AvatarFallback>KC</AvatarFallback>
+                    <Avatar size="md" showStatus statusColor="success">
+                      <AvatarImage src={user?.user_metadata?.avatar_url ?? user?.user_metadata?.picture} alt={user?.user_metadata?.full_name ?? 'Profile'} />
+                      <AvatarFallback>{user?.user_metadata?.full_name?.charAt(0)?.toUpperCase() ?? user?.email?.charAt(0)?.toUpperCase() ?? 'U'}</AvatarFallback>
                     </Avatar>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 bg-[#121212] border-white/10 rounded-2xl"
+                  className="w-60 bg-[#121212] border-white/10 rounded-2xl"
                 >
                   <DropdownMenuItem asChild>
                     <Link
                       href="/profile"
-                      className="cursor-pointer hover:bg-white/5 focus:bg-white/5 rounded-xl"
+                      className="cursor-pointer hover:bg-white/5 focus:bg-white/5 rounded-xl text-base py-2.5"
                     >
                       {t('profile')}
                     </Link>
@@ -170,7 +172,7 @@ export function Header() {
                   <DropdownMenuItem asChild>
                     <Link
                       href="/expert-registration"
-                      className="cursor-pointer hover:bg-white/5 focus:bg-white/5 rounded-xl"
+                      className="cursor-pointer hover:bg-white/5 focus:bg-white/5 rounded-xl text-base py-2.5"
                     >
                       {t('expertRegistration')}
                     </Link>
@@ -179,7 +181,7 @@ export function Header() {
                   <DropdownMenuItem
                     onClick={handleSignOut}
                     disabled={isSigningOut}
-                    className="text-[#FF453A] cursor-pointer hover:bg-[#FF453A]/10 focus:bg-[#FF453A]/10 rounded-xl focus:text-[#FF453A]"
+                    className="text-[#FF453A] cursor-pointer hover:bg-[#FF453A]/10 focus:bg-[#FF453A]/10 rounded-xl focus:text-[#FF453A] text-base py-2.5"
                   >
                     <LogOut className="mr-2 h-5 w-5" />
                     {isSigningOut ? t('signingOut') : t('signOut')}
@@ -188,13 +190,14 @@ export function Header() {
               </DropdownMenu>
             </>
           ) : !loading ? (
-            <Link
-              href="/login"
-              className="flex items-center gap-2 rounded-full bg-[#0079FF] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0079FF]/90 hover:shadow-[0_0_20px_rgba(0,121,255,0.3)]"
+            <button
+              type="button"
+              onClick={openLogin}
+              className="flex items-center gap-2.5 rounded-full bg-[#0079FF] px-6 py-3 text-base font-semibold text-white transition-all hover:bg-[#0079FF]/90 hover:shadow-[0_0_20px_rgba(0,121,255,0.3)]"
             >
-              <LogIn className="h-4 w-4" />
+              <LogIn className="h-5 w-5" />
               {t('login')}
-            </Link>
+            </button>
           ) : null}
         </div>
       </div>

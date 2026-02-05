@@ -53,6 +53,7 @@ import {
   useComments,
   useLikeMutation,
   useCreateComment,
+  useBookmarkMutation,
 } from '@/features/community/api/queries';
 
 /**
@@ -237,6 +238,7 @@ export default function PostDetailPage() {
 
   // Mutations
   const likeMutation = useLikeMutation();
+  const bookmarkMutation = useBookmarkMutation();
   const createCommentMutation = useCreateComment();
 
   // Format timestamp
@@ -272,6 +274,15 @@ export default function PostDetailPage() {
       post_id: postId,
       content,
       parent_id: parentId ?? undefined,
+    });
+  };
+
+  // Handle bookmark action
+  const handleBookmark = () => {
+    if (!post) return;
+    bookmarkMutation.mutate({
+      postId: post.id,
+      isCurrentlyBookmarked: post.is_bookmarked,
     });
   };
 
@@ -506,9 +517,19 @@ export default function PostDetailPage() {
               <Button
                 variant="ghost"
                 size="icon-sm"
-                className="text-muted hover:text-white"
+                onClick={handleBookmark}
+                disabled={bookmarkMutation.isPending}
+                className={cn(
+                  'text-muted hover:text-white',
+                  post.is_bookmarked && 'text-yellow-500 hover:text-yellow-400'
+                )}
               >
-                <Bookmark className="h-4 w-4" />
+                <Bookmark
+                  className={cn(
+                    'h-4 w-4 transition-all duration-200',
+                    post.is_bookmarked && 'fill-current'
+                  )}
+                />
                 <span className="sr-only">{tPost('bookmark')}</span>
               </Button>
             </div>

@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
@@ -31,5 +32,9 @@ export default async function HomePage({ params }: HomePageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  return <LandingPageClient />;
+  return (
+    <Suspense>
+      <LandingPageClient />
+    </Suspense>
+  );
 }

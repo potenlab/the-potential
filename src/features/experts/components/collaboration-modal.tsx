@@ -124,9 +124,11 @@ export function CollaborationModal({
       const timer = setTimeout(() => {
         reset();
         setIsSuccess(false);
+        createCollaboration.reset();
       }, 200);
       return () => clearTimeout(timer);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, reset]);
 
   const onSubmit: SubmitHandler<CollaborationFormData> = async (data) => {
@@ -234,7 +236,13 @@ export function CollaborationModal({
             {createCollaboration.error && (
               <div className="p-3 rounded-2xl bg-[#FF453A]/10 border border-[#FF453A]/20">
                 <p className="text-sm text-[#FF453A] text-center">
-                  {t('failed')}
+                  {createCollaboration.error.message?.includes('is_approved_member') ||
+                   createCollaboration.error.message?.includes('row-level security') ||
+                   createCollaboration.error.message?.includes('new row violates')
+                    ? t('notApprovedMember')
+                    : t('failedDetail', {
+                        error: createCollaboration.error.message || t('failed'),
+                      })}
                 </p>
               </div>
             )}

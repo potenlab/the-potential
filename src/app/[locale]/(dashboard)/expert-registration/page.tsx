@@ -846,7 +846,7 @@ export default function ExpertRegistrationPage() {
                         <div className="flex justify-between">
                           <span className="text-muted">{t('experienceYears')}</span>
                           <span className="text-white">
-                            {form.watch('experienceYears')} {tCommon('yearsAgo') ? '' : 'years'}
+                            {form.watch('experienceYears')} {tCommon('years')}
                           </span>
                         </div>
                         {form.watch('hourlyRate') && (

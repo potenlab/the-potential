@@ -17,6 +17,8 @@ export {
   useDeleteComment,
   // Likes
   useLikeMutation,
+  // Bookmarks
+  useBookmarkMutation,
 } from './queries';
 
 // Re-export types and query keys for external use
@@ -35,4 +37,4 @@ export type {
   PostDetail,
 } from '../types';
 
-export { postQueryKeys, commentQueryKeys, likeQueryKeys } from '../types';
+export { postQueryKeys, commentQueryKeys, likeQueryKeys, bookmarkQueryKeys } from '../types';

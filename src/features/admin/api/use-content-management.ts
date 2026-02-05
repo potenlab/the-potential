@@ -86,10 +86,18 @@ export function useCreateProgram() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (program: Omit<SupportProgramInsert, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (program: Omit<SupportProgramInsert, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('You must be logged in to create a program');
+      }
+
       const { data, error } = await supabase
         .from('support_programs')
-        .insert(program)
+        .insert({ ...program, created_by: user.id })
         .select()
         .single();
 

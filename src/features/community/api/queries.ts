@@ -25,7 +25,7 @@ import type {
   LikeInput,
   Author,
 } from '../types';
-import { postQueryKeys, commentQueryKeys } from '../types';
+import { postQueryKeys, commentQueryKeys, bookmarkQueryKeys } from '../types';
 
 // Constants
 const FEED_PAGE_SIZE = 20;
@@ -89,21 +89,31 @@ async function fetchPostsPage(cursor?: FeedCursor): Promise<FeedPage> {
   const hasNextPage = posts.length > FEED_PAGE_SIZE;
   const postsToReturn = hasNextPage ? posts.slice(0, FEED_PAGE_SIZE) : posts;
 
-  // If user is logged in, batch check like status for all posts
+  // If user is logged in, batch check like and bookmark status for all posts
   let likedPostIds = new Set<number>();
+  let bookmarkedPostIds = new Set<number>();
   if (user && postsToReturn.length > 0) {
     const postIds = postsToReturn.map((p) => p.id);
-    const { data: userLikes } = await supabase
-      .from('likes')
-      .select('likeable_id')
-      .eq('likeable_type', 'post')
-      .eq('user_id', user.id)
-      .in('likeable_id', postIds);
+    const [likesResult, bookmarksResult] = await Promise.all([
+      supabase
+        .from('likes')
+        .select('likeable_id')
+        .eq('likeable_type', 'post')
+        .eq('user_id', user.id)
+        .in('likeable_id', postIds),
+      supabase
+        .from('bookmarks')
+        .select('bookmarkable_id')
+        .eq('bookmarkable_type', 'post')
+        .eq('user_id', user.id)
+        .in('bookmarkable_id', postIds),
+    ]);
 
-    likedPostIds = new Set(userLikes?.map((l) => l.likeable_id) || []);
+    likedPostIds = new Set(likesResult.data?.map((l) => l.likeable_id) || []);
+    bookmarkedPostIds = new Set(bookmarksResult.data?.map((b) => b.bookmarkable_id) || []);
   }
 
-  // Transform posts to include like status
+  // Transform posts to include like and bookmark status
   const postsWithAuthor: PostWithAuthor[] = postsToReturn.map((post) => ({
     id: post.id,
     author_id: post.author_id,
@@ -117,6 +127,7 @@ async function fetchPostsPage(cursor?: FeedCursor): Promise<FeedPage> {
     updated_at: post.updated_at,
     author: post.author as Author,
     is_liked: likedPostIds.has(post.id),
+    is_bookmarked: bookmarkedPostIds.has(post.id),
   }));
 
   // Calculate next cursor
@@ -196,18 +207,29 @@ async function fetchPost(id: number): Promise<PostWithAuthor> {
     throw new Error(`Failed to fetch post: ${error.message}`);
   }
 
-  // Check if user liked this post
+  // Check if user liked and bookmarked this post
   let isLiked = false;
+  let isBookmarked = false;
   if (user) {
-    const { data: like } = await supabase
-      .from('likes')
-      .select('id')
-      .eq('likeable_type', 'post')
-      .eq('likeable_id', id)
-      .eq('user_id', user.id)
-      .maybeSingle();
+    const [likeResult, bookmarkResult] = await Promise.all([
+      supabase
+        .from('likes')
+        .select('id')
+        .eq('likeable_type', 'post')
+        .eq('likeable_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle(),
+      supabase
+        .from('bookmarks')
+        .select('id')
+        .eq('bookmarkable_type', 'post')
+        .eq('bookmarkable_id', id)
+        .eq('user_id', user.id)
+        .maybeSingle(),
+    ]);
 
-    isLiked = !!like;
+    isLiked = !!likeResult.data;
+    isBookmarked = !!bookmarkResult.data;
   }
 
   return {
@@ -223,6 +245,7 @@ async function fetchPost(id: number): Promise<PostWithAuthor> {
     updated_at: post.updated_at,
     author: post.author as Author,
     is_liked: isLiked,
+    is_bookmarked: isBookmarked,
   };
 }
 
@@ -411,6 +434,7 @@ export function useCreatePost() {
         ...data,
         author: data.author as Author,
         is_liked: false,
+        is_bookmarked: false,
         media_urls: data.media_urls || [],
       } as PostWithAuthor;
     },
@@ -732,6 +756,132 @@ export function useDeleteComment() {
 
       // Invalidate posts list to update comment counts
       queryClient.invalidateQueries({ queryKey: postQueryKeys.lists() });
+    },
+  });
+}
+
+/**
+ * useBookmarkMutation - Mutation hook for bookmarking/unbookmarking posts
+ *
+ * Features:
+ * - Optimistic updates for immediate UI feedback
+ * - Automatic rollback on error
+ * - Invalidates profile bookmark queries
+ */
+export function useBookmarkMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      postId,
+      isCurrentlyBookmarked,
+    }: {
+      postId: number;
+      isCurrentlyBookmarked: boolean;
+    }) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        throw new Error('You must be logged in to bookmark');
+      }
+
+      if (isCurrentlyBookmarked) {
+        const { error } = await supabase
+          .from('bookmarks')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('bookmarkable_type', 'post')
+          .eq('bookmarkable_id', postId);
+
+        if (error) {
+          throw new Error(`Failed to remove bookmark: ${error.message}`);
+        }
+
+        return { action: 'unbookmarked' as const, postId, userId: user.id };
+      } else {
+        const { error } = await supabase.from('bookmarks').insert({
+          user_id: user.id,
+          bookmarkable_type: 'post',
+          bookmarkable_id: postId,
+        });
+
+        if (error) {
+          throw new Error(`Failed to bookmark: ${error.message}`);
+        }
+
+        return { action: 'bookmarked' as const, postId, userId: user.id };
+      }
+    },
+    onMutate: async ({ postId, isCurrentlyBookmarked }) => {
+      await queryClient.cancelQueries({ queryKey: postQueryKeys.lists() });
+      await queryClient.cancelQueries({
+        queryKey: postQueryKeys.detail(postId),
+      });
+
+      const previousPosts = queryClient.getQueryData<InfiniteData<FeedPage>>(
+        postQueryKeys.lists()
+      );
+      const previousPost = queryClient.getQueryData<PostWithAuthor>(
+        postQueryKeys.detail(postId)
+      );
+
+      // Optimistically update posts feed
+      queryClient.setQueryData<InfiniteData<FeedPage>>(
+        postQueryKeys.lists(),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            pages: old.pages.map((page) => ({
+              ...page,
+              posts: page.posts.map((post) =>
+                post.id === postId
+                  ? { ...post, is_bookmarked: !isCurrentlyBookmarked }
+                  : post
+              ),
+            })),
+          };
+        }
+      );
+
+      // Optimistically update single post if cached
+      queryClient.setQueryData<PostWithAuthor>(
+        postQueryKeys.detail(postId),
+        (old) => {
+          if (!old) return old;
+          return { ...old, is_bookmarked: !isCurrentlyBookmarked };
+        }
+      );
+
+      return { previousPosts, previousPost };
+    },
+    onError: (_err, variables, context) => {
+      if (context?.previousPosts) {
+        queryClient.setQueryData(postQueryKeys.lists(), context.previousPosts);
+      }
+      if (context?.previousPost) {
+        queryClient.setQueryData(
+          postQueryKeys.detail(variables.postId),
+          context.previousPost
+        );
+      }
+    },
+    onSettled: (data) => {
+      queryClient.invalidateQueries({ queryKey: postQueryKeys.lists() });
+      if (data) {
+        queryClient.invalidateQueries({
+          queryKey: postQueryKeys.detail(data.postId),
+        });
+        // Invalidate profile bookmarks cache
+        queryClient.invalidateQueries({
+          queryKey: ['profile', 'bookmarks', data.userId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['profile', 'activity', data.userId],
+        });
+      }
     },
   });
 }

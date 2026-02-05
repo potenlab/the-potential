@@ -62,20 +62,20 @@ export function LanguageSwitcher() {
           className="text-[#8B95A1] hover:text-white"
           aria-label="Change language"
         >
-          <Globe className="h-5 w-5" />
+          <Globe className="h-6 w-6" />
           <span className="sr-only">Change language</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-40 bg-[#121212] border-white/10 rounded-2xl"
+        className="w-44 bg-[#121212] border-white/10 rounded-2xl"
       >
         {routing.locales.map((loc) => (
           <DropdownMenuItem
             key={loc}
             onClick={() => handleLocaleChange(loc)}
             className={cn(
-              'flex items-center justify-between cursor-pointer rounded-xl px-3 py-2',
+              'flex items-center justify-between cursor-pointer rounded-xl px-4 py-2.5 text-base',
               'hover:bg-white/5 focus:bg-white/5',
               locale === loc && 'bg-[#0079FF]/10 text-white'
             )}
@@ -83,7 +83,7 @@ export function LanguageSwitcher() {
             <span className={cn(locale === loc ? 'text-white' : 'text-[#8B95A1]')}>
               {localeNames[loc].nativeName}
             </span>
-            {locale === loc && <Check className="h-4 w-4 text-[#0079FF]" />}
+            {locale === loc && <Check className="h-5 w-5 text-[#0079FF]" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
