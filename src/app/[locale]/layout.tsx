@@ -5,6 +5,8 @@ import { setRequestLocale, getMessages } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import { routing, type Locale } from '@/i18n/routing';
 import { Providers } from '@/app/providers';
+import { AuthGuard } from '@/components/common/auth-guard';
+import { AuthModal } from '@/features/auth/components/auth-modal';
 import '@/app/globals.css';
 
 /**
@@ -98,7 +100,11 @@ export default async function LocaleLayout({
     <html lang={locale} className="dark" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>{children}</Providers>
+          <Providers>
+            {children}
+            <AuthGuard />
+            <AuthModal />
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

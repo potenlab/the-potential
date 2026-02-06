@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
+import { Logo } from '@/components/common/logo';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -43,14 +44,14 @@ export default async function AuthLayout({
       <header className="absolute left-0 right-0 top-0 z-10 flex justify-center py-8">
         <Link
           href="/"
-          className="text-xl font-extrabold text-white transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          className="transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
         >
-          The Potential
+          <Logo height={24} />
         </Link>
       </header>
 
       {/* Main content area - centered */}
-      <main className="relative z-10 flex w-full max-w-md flex-col items-center justify-center px-5 py-24">
+      <main className="relative z-10 flex w-full max-w-[768px] flex-col items-center justify-center px-5 py-24">
         {children}
       </main>
 

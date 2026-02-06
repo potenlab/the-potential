@@ -14,3 +14,12 @@ export {
   updateSession,
   routeConfig,
 } from './middleware';
+export {
+  uploadFile,
+  uploadEventImage,
+  deleteFile,
+  validateFile,
+  generateFilePath,
+  ALLOWED_IMAGE_TYPES,
+  MAX_IMAGE_SIZE_MB,
+} from './storage';

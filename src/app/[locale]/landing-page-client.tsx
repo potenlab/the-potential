@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { Header } from '@/components/layouts/header';
 import { BottomNav } from '@/components/layouts/bottom-nav';
-import { AuthModal } from '@/features/auth/components/auth-modal';
 import HomePage from './(dashboard)/home/landing-content';
 
 export default function LandingPageClient() {
@@ -33,7 +32,6 @@ export default function LandingPageClient() {
         </div>
       </main>
       <BottomNav />
-      <AuthModal />
     </div>
   );
 }

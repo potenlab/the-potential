@@ -54,6 +54,7 @@ export const STORAGE_BUCKETS = {
   expertDocuments: 'expert-documents',
   expertPortfolio: 'expert-portfolio',
   programImages: 'program-images',
+  eventImages: 'event-images',
 } as const;
 
 type StorageBucket = (typeof STORAGE_BUCKETS)[keyof typeof STORAGE_BUCKETS];

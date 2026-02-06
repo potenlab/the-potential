@@ -17,8 +17,11 @@
 
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { Search, SlidersHorizontal, X, UserPlus, Clock } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { useDebouncedCallback } from 'use-debounce';
+import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/lib/supabase/client';
 
 // UI Components
 import { Input } from '@/components/ui/input';
@@ -122,6 +125,34 @@ function EmptyState({
  */
 export default function ExpertSearchPage() {
   const t = useTranslations('experts');
+  const { user } = useAuth();
+
+  // Fetch user role and expert application status
+  const [userRole, setUserRole] = React.useState<string | null>(null);
+  const [expertStatus, setExpertStatus] = React.useState<string | null>(null);
+  React.useEffect(() => {
+    if (!user) return;
+    // Fetch profile role
+    supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setUserRole(data.role);
+      });
+    // Fetch expert application status
+    supabase
+      .from('expert_profiles')
+      .select('status')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) setExpertStatus(data.status);
+      });
+  }, [user]);
+
+  const isPending = expertStatus === 'pending_review';
 
   // Mobile filter sheet state
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
@@ -185,11 +216,32 @@ export default function ExpertSearchPage() {
   return (
     <div className="py-6 md:py-8">
       {/* Page Header */}
-      <header className="mb-6 md:mb-8">
-        <h1 className="text-3xl font-bold text-white md:text-4xl">
-          {t('title')}
-        </h1>
-        <p className="mt-1 text-muted">{t('subtitle')}</p>
+      <header className="mb-6 md:mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white md:text-4xl">
+            {t('title')}
+          </h1>
+          <p className="mt-1 text-muted">{t('subtitle')}</p>
+        </div>
+        {userRole !== 'expert' && (
+          isPending ? (
+            <span
+              className="shrink-0 flex items-center gap-2 rounded-full bg-[#8B95A1]/20 px-5 py-2.5 text-sm font-semibold text-[#8B95A1] cursor-not-allowed md:px-6 md:py-3 md:text-base"
+              aria-disabled="true"
+            >
+              <Clock className="h-4 w-4 md:h-5 md:w-5" />
+              {t('registration.pending')}
+            </span>
+          ) : (
+            <Link
+              href="/expert-registration"
+              className="shrink-0 flex items-center gap-2 rounded-full bg-[#0079FF] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#0079FF]/90 hover:shadow-[0_0_20px_rgba(0,121,255,0.3)] md:px-6 md:py-3 md:text-base"
+            >
+              <UserPlus className="h-4 w-4 md:h-5 md:w-5" />
+              {t('expertRegistration')}
+            </Link>
+          )
+        )}
       </header>
 
       {/* Search and Mobile Filter Toggle */}

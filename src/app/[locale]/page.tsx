@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { getTranslations } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
-import LandingPageClient from './landing-page-client';
+import AboutPageClient from './about-page-client';
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
@@ -34,7 +34,7 @@ export default async function HomePage({ params }: HomePageProps) {
 
   return (
     <Suspense>
-      <LandingPageClient />
+      <AboutPageClient />
     </Suspense>
   );
 }
