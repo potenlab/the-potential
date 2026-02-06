@@ -60,6 +60,9 @@ export const routeConfig = {
   protectedRoutes: ['/thread', '/experts', '/profile', '/clubs', '/support-programs', '/expert-registration'],
   // Routes that are only accessible when NOT authenticated
   authRoutes: ['/login', '/signup'],
+  // Routes that require authentication but should NOT redirect to /home
+  // (used during onboarding flow for pending users)
+  onboardingRoutes: ['/signup/onboarding'],
   // Routes that require admin role
   adminRoutes: ['/admin'],
 };
@@ -82,8 +85,13 @@ export async function updateSession(request: NextRequest) {
 
   // Protected routes are handled client-side by AuthGuard (opens auth modal)
 
-  // Check if path matches auth routes (login, signup)
-  const isAuthRoute = routeConfig.authRoutes.some(
+  // Check if this is an onboarding route first
+  const isOnboardingRoute = routeConfig.onboardingRoutes.some(
+    (route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
+  );
+
+  // Check if path matches auth routes (login, signup) - exclude onboarding routes
+  const isAuthRoute = !isOnboardingRoute && routeConfig.authRoutes.some(
     (route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
   );
 
@@ -91,6 +99,14 @@ export async function updateSession(request: NextRequest) {
   const isAdminRoute = routeConfig.adminRoutes.some(
     (route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
   );
+
+  // Onboarding routes: require authentication, but don't redirect to home
+  if (isOnboardingRoute) {
+    if (!user) {
+      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    }
+    return response;
+  }
 
   // Redirect authenticated users from auth routes to home
   if (user && isAuthRoute) {

@@ -5,17 +5,17 @@ import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/navigation';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/cn';
-import { Home, TrendingUp, MessageCircle, Users, User } from 'lucide-react';
+import { TrendingUp, MessageCircle, Users, User, CalendarDays } from 'lucide-react';
 
 /**
  * Navigation item configuration
  * Maps to the navigation translations in messages/[locale].json
  */
 const navItems = [
-  { href: '/', labelKey: 'home', icon: Home },
   { href: '/support-programs', labelKey: 'support', icon: TrendingUp },
+  { href: '/events', labelKey: 'events', icon: CalendarDays },
   { href: '/thread', labelKey: 'thread', icon: MessageCircle },
-  { href: '/clubs', labelKey: 'clubs', icon: Users },
+  { href: '/experts', labelKey: 'experts', icon: Users },
   { href: '/profile', labelKey: 'profile', icon: User },
 ] as const;
 
@@ -54,9 +54,7 @@ export function BottomNav() {
       <div className="flex items-center justify-around h-full px-2">
         {navItems.map((item) => {
           const isActive =
-            item.href === '/'
-              ? pathname === '/' || pathname === ''
-              : pathname === item.href || pathname.startsWith(`${item.href}/`);
+            pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
 
           return (

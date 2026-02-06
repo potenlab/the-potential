@@ -4,11 +4,12 @@
  * Profile Page
  *
  * User profile page with:
- * - Profile completeness percentage calculation
+ * - Profile completeness percentage calculation based on onboarding fields
  * - Editable sections using Dialog-based forms
  * - Changes persist to database via Supabase
  * - Profile photo upload capability
  * - Activity stats with real data from useUserActivity
+ * - Displays onboarding data: username, nickname, region, industry, business_type, business_stage
  * - Stacked sections: Profile details, Activity, Bookmarks
  * - Uses Avatar, Badge, Progress, Accordion from @/components/ui/
  * - All labels use translations from useTranslations('profile')
@@ -22,15 +23,14 @@ import {
   Mail,
   Building2,
   Briefcase,
-  Globe,
-  Linkedin,
-  Twitter,
-  Github,
   Camera,
   Edit2,
   CheckCircle,
   AlertCircle,
-  ExternalLink,
+  MapPin,
+  Landmark,
+  TrendingUp,
+  AtSign,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -51,7 +51,6 @@ import { Button } from '@/components/ui/button';
 
 import {
   EditAboutDialog,
-  EditSocialDialog,
   EditExpertiseDialog,
   ActivityTab,
   BookmarksTab,
@@ -64,18 +63,96 @@ import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
-interface SocialLinks {
-  website?: string | null;
-  linkedin?: string | null;
-  twitter?: string | null;
-  github?: string | null;
+// ---------------------------------------------------------------------------
+// Label lookup maps (matching onboarding data)
+// ---------------------------------------------------------------------------
+
+const INDUSTRY_LABELS: Record<string, string> = {
+  it: 'IT/소프트웨어',
+  fintech: '핀테크',
+  healthcare: '헬스케어/바이오',
+  education: '교육(에듀테크)',
+  ecommerce: '이커머스',
+  food: '식품/F&B',
+  manufacturing: '제조업',
+  logistics: '물류/유통',
+  realestate: '부동산/프롭테크',
+  entertainment: '엔터테인먼트/미디어',
+  environment: '환경/에너지',
+  fashion: '패션/뷰티',
+  travel: '여행/관광',
+  agriculture: '농업/애그테크',
+  other: '기타',
+};
+
+const SUB_INDUSTRY_LABELS: Record<string, Record<string, string>> = {
+  it: { saas: 'SaaS', ai_ml: 'AI/ML', blockchain: '블록체인', security: '보안', cloud: '클라우드', data: '데이터', mobile_app: '모바일앱', web_service: '웹서비스', iot: 'IoT', other: '기타' },
+  fintech: { payment: '결제', remittance: '송금', lending: '대출', insurance: '보험', investment: '투자', asset_management: '자산관리', cryptocurrency: '가상화폐', other: '기타' },
+  healthcare: { digital_health: '디지털 헬스', biotech: '바이오테크', medical_device: '의료기기', pharma: '제약', wellness: '웰니스', other: '기타' },
+  education: { k12: 'K-12', university: '대학/성인교육', language: '어학', coding: '코딩교육', corporate: '기업교육', other: '기타' },
+  ecommerce: { b2c: 'B2C', b2b: 'B2B', marketplace: '마켓플레이스', social_commerce: '소셜커머스', subscription: '구독커머스', other: '기타' },
+  food: { restaurant: '외식업', delivery: '배달/딜리버리', food_tech: '푸드테크', beverage: '음료', catering: '케이터링', other: '기타' },
+  manufacturing: { smart_factory: '스마트 팩토리', materials: '소재/부품', robotics: '로봇', electronics: '전자기기', other: '기타' },
+  logistics: { delivery: '배송', warehouse: '물류/창고', supply_chain: '공급망관리', distribution: '유통', other: '기타' },
+  realestate: { brokerage: '중개', construction: '건설', interior: '인테리어', management: '부동산관리', other: '기타' },
+  entertainment: { content: '콘텐츠', gaming: '게임', music: '음악', video: '영상/OTT', publishing: '출판', other: '기타' },
+  environment: { renewable_energy: '재생에너지', waste_management: '폐기물 관리', carbon: '탄소/기후', water: '수자원', other: '기타' },
+  fashion: { clothing: '의류', beauty: '뷰티/화장품', accessories: '액세서리', sustainable: '지속가능 패션', other: '기타' },
+  travel: { accommodation: '숙박', tour: '투어/여행사', transportation: '교통', experience: '체험/액티비티', other: '기타' },
+  agriculture: { smart_farm: '스마트팜', distribution: '농산물 유통', livestock: '축산', fishery: '수산', other: '기타' },
+  other: { all: '전체' },
+};
+
+const BUSINESS_TYPE_LABELS: Record<string, string> = {
+  startup: '스타트업',
+  self_employed: '자영업',
+  employee: '직장인/예비',
+  freelancer: '프리랜서/N잡러',
+  creator: '크리에이터',
+  agency: '에이전시',
+  professional: '전문직',
+};
+
+const BUSINESS_STAGE_LABELS: Record<string, Record<string, string>> = {
+  startup: { ideation: '아이디어 구상', validation: '시장 검증', mvp: 'MVP 개발', launch_prep: '출시 준비', early_operation: '초기 운영', growth: '성장', expansion: '확장', stabilization: '안정화 / IPO준비' },
+  self_employed: { preparation: '창업 준비', store_setup: '매장 오픈 준비', early_operation: '초기 운영', stable_operation: '안정적 운영', revenue_growth: '매출 성장', multi_location: '다점포 확장', franchise: '프랜차이즈/브랜드화' },
+  employee: { employed: '직장 재직 중', career_change: '이직/전직 준비', idea_planning: '사업 아이디어 구상', side_project: '부업/사이드 프로젝트', resignation_prep: '퇴사 준비', startup_prep: '창업 준비' },
+  freelancer: { starting: '시작 단계', portfolio: '포트폴리오 구축', regular_clients: '고정 클라이언트 확보', income_stable: '수익 안정화', business_expansion: '사업 확장', team_transition: '법인/팀 전환' },
+  creator: { content_planning: '콘텐츠 기획', channel_building: '채널 구축', content_production: '콘텐츠 제작/업로드', audience_growth: '구독자/팔로워 성장', monetization: '수익화', brand_expansion: '브랜드 확장' },
+  agency: { establishment: '설립 준비', team_building: '팀 빌딩', early_clients: '초기 클라이언트 확보', service_stable: '서비스 안정화', business_expansion: '사업 확장', global_expansion: '대형 프로젝트/글로벌 진출' },
+  professional: { license_prep: '자격 준비/수습', experience: '실무 경험 축적', independence_prep: '독립 개업 준비', opening: '개업/초기 운영', client_stable: '고객 확보/안정화', practice_expansion: '사업 확장' },
+};
+
+// ---------------------------------------------------------------------------
+// Helper functions
+// ---------------------------------------------------------------------------
+
+function getIndustryLabel(key: string | null): string | null {
+  if (!key) return null;
+  return INDUSTRY_LABELS[key] || key;
 }
 
-interface ExpertiseData {
-  position?: string | null;
-  experience_years?: number | null;
-  skills?: string[];
-  industry?: string | null;
+function getSubIndustryLabel(industry: string | null, subKey: string | null): string | null {
+  if (!industry || !subKey) return null;
+  return SUB_INDUSTRY_LABELS[industry]?.[subKey] || subKey;
+}
+
+function getBusinessTypeLabel(key: string | null): string | null {
+  if (!key) return null;
+  return BUSINESS_TYPE_LABELS[key] || key;
+}
+
+function getBusinessStageLabel(businessType: string | null, stageKey: string | null): string | null {
+  if (!businessType || !stageKey) return null;
+  return BUSINESS_STAGE_LABELS[businessType]?.[stageKey] || stageKey;
+}
+
+function getRegionDisplay(region: string | null, subRegion: string | null): string | null {
+  if (!region) return null;
+  if (subRegion && subRegion !== '전체') {
+    return `${region} ${subRegion}`;
+  }
+  return region;
 }
 
 /**
@@ -91,24 +168,23 @@ function getInitials(name: string | null): string {
 }
 
 /**
- * Calculate profile completeness percentage
+ * Calculate profile completeness percentage based on onboarding fields
  */
-function calculateCompleteness(
-  profile: Profile | null,
-  socialLinks: SocialLinks,
-  expertise: ExpertiseData
-): number {
+function calculateCompleteness(profile: Profile | null): number {
   if (!profile) return 0;
 
   const fields = [
-    { field: profile.full_name, weight: 20 },
-    { field: profile.avatar_url, weight: 15 },
-    { field: profile.company_name, weight: 15 },
-    { field: profile.email, weight: 15 },
-    { field: expertise.position, weight: 10 },
-    { field: expertise.skills && expertise.skills.length > 0, weight: 10 },
-    { field: socialLinks.linkedin || socialLinks.website, weight: 10 },
-    { field: expertise.industry, weight: 5 },
+    { field: profile.full_name, weight: 15 },
+    { field: profile.avatar_url, weight: 10 },
+    { field: profile.nickname, weight: 10 },
+    { field: profile.username, weight: 10 },
+    { field: profile.bio, weight: 10 },
+    { field: profile.region, weight: 10 },
+    { field: profile.industry, weight: 10 },
+    { field: profile.business_type, weight: 10 },
+    { field: profile.business_stage, weight: 5 },
+    { field: profile.company_name, weight: 5 },
+    { field: profile.email, weight: 5 },
   ];
 
   const totalWeight = fields.reduce((sum, f) => sum + f.weight, 0);
@@ -129,12 +205,10 @@ function InfoRow({
   icon: Icon,
   label,
   value,
-  href,
 }: {
   icon?: React.ComponentType<{ className?: string }>;
   label: string;
   value: string | null | undefined;
-  href?: string;
 }) {
   const displayValue = value || '-';
 
@@ -143,19 +217,7 @@ function InfoRow({
       <p className="text-sm text-muted">{label}</p>
       <div className="mt-1 flex items-center gap-2">
         {Icon && <Icon className="h-4 w-4 text-muted" />}
-        {href && value ? (
-          <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 font-medium text-primary hover:underline"
-          >
-            {displayValue}
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        ) : (
-          <p className="font-medium text-white">{displayValue}</p>
-        )}
+        <p className="font-medium text-white">{displayValue}</p>
       </div>
     </div>
   );
@@ -176,23 +238,7 @@ export default function ProfilePage() {
 
   // Dialog states
   const [aboutDialogOpen, setAboutDialogOpen] = React.useState(false);
-  const [socialDialogOpen, setSocialDialogOpen] = React.useState(false);
   const [expertiseDialogOpen, setExpertiseDialogOpen] = React.useState(false);
-
-  // Extended data (would be stored in separate tables or JSONB in real implementation)
-  const [socialLinks, setSocialLinks] = React.useState<SocialLinks>({
-    website: null,
-    linkedin: null,
-    twitter: null,
-    github: null,
-  });
-
-  const [expertise, setExpertise] = React.useState<ExpertiseData>({
-    position: null,
-    experience_years: null,
-    skills: [],
-    industry: null,
-  });
 
   // Fetch profile data
   const fetchProfile = React.useCallback(async () => {
@@ -301,18 +347,13 @@ export default function ProfilePage() {
     setProfile((prev) => (prev ? { ...prev, ...updatedData } : null));
   };
 
-  // Handle social links update
-  const handleSocialUpdate = (updatedLinks: SocialLinks) => {
-    setSocialLinks(updatedLinks);
-  };
-
   // Handle expertise update
-  const handleExpertiseUpdate = (updatedExpertise: ExpertiseData) => {
-    setExpertise(updatedExpertise);
+  const handleExpertiseUpdate = (updatedData: Partial<Profile>) => {
+    setProfile((prev) => (prev ? { ...prev, ...updatedData } : null));
   };
 
-  // Calculate completeness
-  const completeness = calculateCompleteness(profile, socialLinks, expertise);
+  // Calculate completeness directly from profile
+  const completeness = calculateCompleteness(profile);
 
   // Loading state
   if (isLoading) {
@@ -376,12 +417,6 @@ export default function ProfilePage() {
             <div className="flex-1" />
             <Skeleton className="h-5 w-5" rounded="md" />
           </div>
-          <div className="flex items-center gap-2 border-b border-white/[0.08] px-6 py-4">
-            <Skeleton className="h-5 w-5 rounded-md" />
-            <Skeleton className="h-5 w-24" rounded="md" />
-            <div className="flex-1" />
-            <Skeleton className="h-5 w-5" rounded="md" />
-          </div>
           <div className="flex items-center gap-2 px-6 py-4">
             <Skeleton className="h-5 w-5 rounded-md" />
             <Skeleton className="h-5 w-24" rounded="md" />
@@ -421,6 +456,14 @@ export default function ProfilePage() {
     );
   }
 
+  // Derived display values
+  const displayName = profile.nickname || profile.full_name || 'Anonymous User';
+  const regionDisplay = getRegionDisplay(profile.region, profile.sub_region);
+  const industryLabel = getIndustryLabel(profile.industry);
+  const subIndustryLabel = getSubIndustryLabel(profile.industry, profile.sub_industry);
+  const businessTypeLabel = getBusinessTypeLabel(profile.business_type);
+  const businessStageLabel = getBusinessStageLabel(profile.business_type, profile.business_stage);
+
   return (
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
       {/* Page Title */}
@@ -449,11 +492,11 @@ export default function ProfilePage() {
                 {profile.avatar_url ? (
                   <AvatarImage
                     src={profile.avatar_url}
-                    alt={profile.full_name || 'Profile'}
+                    alt={displayName}
                   />
                 ) : null}
                 <AvatarFallback>
-                  {getInitials(profile.full_name)}
+                  {getInitials(profile.nickname || profile.full_name)}
                 </AvatarFallback>
               </Avatar>
 
@@ -491,7 +534,7 @@ export default function ProfilePage() {
             <div className="flex-1 text-center md:text-left">
               <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
                 <h2 className="text-3xl font-bold text-white">
-                  {profile.full_name || 'Anonymous User'}
+                  {displayName}
                 </h2>
                 {profile.approval_status === 'approved' && (
                   <Badge variant="success" size="sm" className="gap-1">
@@ -506,14 +549,24 @@ export default function ProfilePage() {
                 )}
               </div>
 
+              {/* Username */}
+              {profile.username && (
+                <p className="mt-1 text-base text-muted">@{profile.username}</p>
+              )}
+
+              {/* Company */}
               {profile.company_name && (
                 <p className="mt-1 text-muted">{profile.company_name}</p>
               )}
 
-              <p className="mt-2 text-base text-muted">{profile.email}</p>
+              {/* Bio */}
+              {profile.bio && (
+                <p className="mt-2 text-sm text-white/80">{profile.bio}</p>
+              )}
 
-              {/* Role badge */}
-              <div className="mt-3">
+              {/* Tags row: business type, region */}
+              <div className="mt-3 flex flex-wrap gap-2 justify-center md:justify-start">
+                {/* Role badge */}
                 <Badge variant="default" size="md">
                   {profile.role === 'admin'
                     ? 'Administrator'
@@ -521,6 +574,16 @@ export default function ProfilePage() {
                       ? 'Expert'
                       : 'Member'}
                 </Badge>
+                {businessTypeLabel && (
+                  <Badge variant="default" size="md">
+                    {businessTypeLabel}
+                  </Badge>
+                )}
+                {regionDisplay && (
+                  <Badge variant="default" size="md">
+                    {regionDisplay}
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -642,6 +705,18 @@ export default function ProfilePage() {
                       value={profile.full_name}
                     />
                     <InfoRow
+                      icon={AtSign}
+                      label="닉네임"
+                      value={profile.nickname}
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <InfoRow
+                      icon={AtSign}
+                      label="사용자명"
+                      value={profile.username ? `@${profile.username}` : null}
+                    />
+                    <InfoRow
                       icon={Building2}
                       label={t('fields.company')}
                       value={profile.company_name}
@@ -652,12 +727,18 @@ export default function ProfilePage() {
                     label={t('fields.email')}
                     value={profile.email}
                   />
+                  {profile.bio && (
+                    <InfoRow
+                      label={t('fields.bio')}
+                      value={profile.bio}
+                    />
+                  )}
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            {/* Expertise Section */}
-            <AccordionItem value="expertise" className="border-white/[0.08] px-6">
+            {/* Expertise / Business Info Section */}
+            <AccordionItem value="expertise" className="border-white/[0.08] border-b-0 px-6">
               <AccordionTrigger className="text-white hover:no-underline">
                 <div className="flex items-center gap-2">
                   <Briefcase className="h-5 w-5 text-primary" />
@@ -676,49 +757,48 @@ export default function ProfilePage() {
                       {tCommon('edit')}
                     </Button>
                   </div>
-                  {expertise.position ||
-                  expertise.industry ||
-                  (expertise.skills && expertise.skills.length > 0) ? (
+                  {profile.industry ||
+                  profile.business_type ||
+                  profile.region ? (
                     <div className="space-y-4">
+                      {/* Industry */}
                       <div className="grid gap-4 md:grid-cols-2">
                         <InfoRow
-                          label={t('fields.position')}
-                          value={expertise.position}
+                          icon={Landmark}
+                          label="사업 분야"
+                          value={industryLabel}
                         />
                         <InfoRow
-                          label="Industry"
-                          value={
-                            expertise.industry
-                              ?.replace(/_/g, ' ')
-                              .replace(/\b\w/g, (l) => l.toUpperCase()) || null
-                          }
+                          label="세부 분야"
+                          value={subIndustryLabel}
                         />
                       </div>
-                      {expertise.experience_years && (
+
+                      {/* Business Type & Stage */}
+                      <div className="grid gap-4 md:grid-cols-2">
                         <InfoRow
-                          label="Years of Experience"
-                          value={`${expertise.experience_years} years`}
+                          icon={Briefcase}
+                          label="사업 유형"
+                          value={businessTypeLabel}
                         />
-                      )}
-                      {expertise.skills && expertise.skills.length > 0 && (
-                        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                          <p className="text-sm text-muted">
-                            {t('sections.skills')}
-                          </p>
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {expertise.skills.map((skill) => (
-                              <Badge key={skill} variant="default" size="sm">
-                                {skill}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+                        <InfoRow
+                          icon={TrendingUp}
+                          label="비즈니스 단계"
+                          value={businessStageLabel}
+                        />
+                      </div>
+
+                      {/* Region */}
+                      <InfoRow
+                        icon={MapPin}
+                        label="활동 지역"
+                        value={regionDisplay}
+                      />
                     </div>
                   ) : (
                     <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
                       <p className="text-base text-muted">
-                        No expertise information added yet.
+                        사업/전문 분야 정보가 아직 등록되지 않았습니다.
                       </p>
                       <Button
                         variant="link"
@@ -726,99 +806,7 @@ export default function ProfilePage() {
                         className="mt-2 p-0 h-auto"
                         onClick={() => setExpertiseDialogOpen(true)}
                       >
-                        Add your expertise
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Social Links Section */}
-            <AccordionItem
-              value="social"
-              className="border-white/[0.08] border-b-0 px-6"
-            >
-              <AccordionTrigger className="text-white hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-primary" />
-                  <span>Social & Links</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-6">
-                <div className="space-y-4">
-                  <div className="flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSocialDialogOpen(true)}
-                      leftIcon={<Edit2 className="h-4 w-4" />}
-                    >
-                      {tCommon('edit')}
-                    </Button>
-                  </div>
-                  {socialLinks.website ||
-                  socialLinks.linkedin ||
-                  socialLinks.twitter ||
-                  socialLinks.github ? (
-                    <div className="grid gap-4 md:grid-cols-2">
-                      {socialLinks.website && (
-                        <InfoRow
-                          icon={Globe}
-                          label={t('fields.website')}
-                          value={socialLinks.website}
-                          href={socialLinks.website}
-                        />
-                      )}
-                      {socialLinks.linkedin && (
-                        <InfoRow
-                          icon={Linkedin}
-                          label={t('fields.linkedin')}
-                          value={socialLinks.linkedin}
-                          href={
-                            socialLinks.linkedin.startsWith('http')
-                              ? socialLinks.linkedin
-                              : `https://linkedin.com/in/${socialLinks.linkedin}`
-                          }
-                        />
-                      )}
-                      {socialLinks.twitter && (
-                        <InfoRow
-                          icon={Twitter}
-                          label={t('fields.twitter')}
-                          value={socialLinks.twitter}
-                          href={
-                            socialLinks.twitter.startsWith('http')
-                              ? socialLinks.twitter
-                              : `https://twitter.com/${socialLinks.twitter.replace('@', '')}`
-                          }
-                        />
-                      )}
-                      {socialLinks.github && (
-                        <InfoRow
-                          icon={Github}
-                          label={t('fields.github')}
-                          value={socialLinks.github}
-                          href={
-                            socialLinks.github.startsWith('http')
-                              ? socialLinks.github
-                              : `https://github.com/${socialLinks.github}`
-                          }
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                      <p className="text-base text-muted">
-                        No social links added yet.
-                      </p>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="mt-2 p-0 h-auto"
-                        onClick={() => setSocialDialogOpen(true)}
-                      >
-                        Add your social links
+                        정보 등록하기
                       </Button>
                     </div>
                   )}
@@ -866,19 +854,10 @@ export default function ProfilePage() {
         onSuccess={handleAboutUpdate}
       />
 
-      <EditSocialDialog
-        open={socialDialogOpen}
-        onOpenChange={setSocialDialogOpen}
-        currentValues={socialLinks}
-        profileId={profile.id}
-        onSuccess={handleSocialUpdate}
-      />
-
       <EditExpertiseDialog
         open={expertiseDialogOpen}
         onOpenChange={setExpertiseDialogOpen}
-        currentValues={expertise}
-        profileId={profile.id}
+        profile={profile}
         onSuccess={handleExpertiseUpdate}
       />
     </div>

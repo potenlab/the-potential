@@ -2,8 +2,7 @@ import { ReactNode } from 'react';
 import { setRequestLocale } from 'next-intl/server';
 import { Header } from '@/components/layouts/header';
 import { BottomNav } from '@/components/layouts/bottom-nav';
-import { AuthModal } from '@/features/auth/components/auth-modal';
-import { AuthGuard } from '@/components/common/auth-guard';
+import { Footer } from '@/components/layouts/footer';
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -59,14 +58,11 @@ export default async function DashboardLayout({
         </div>
       </main>
 
+      {/* Footer with platform info and quick links */}
+      <Footer />
+
       {/* Fixed Bottom Navigation - Mobile only (80px height) */}
       <BottomNav />
-
-      {/* Auth Guard - Opens modal on protected routes for unauthenticated users */}
-      <AuthGuard />
-
-      {/* Auth Modal - Login/Signup dialog triggered from header or auth guard */}
-      <AuthModal />
     </div>
   );
 }

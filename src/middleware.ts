@@ -52,7 +52,14 @@ export async function middleware(request: NextRequest) {
       pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
   );
 
-  const isAuthRoute = routeConfig.authRoutes.some(
+  // Check if this is an onboarding route FIRST (before checking auth routes)
+  // Onboarding routes are sub-paths of /signup but should NOT redirect authenticated users away
+  const isOnboardingRoute = routeConfig.onboardingRoutes.some(
+    (route) =>
+      pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
+  );
+
+  const isAuthRoute = !isOnboardingRoute && routeConfig.authRoutes.some(
     (route) =>
       pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
   );
@@ -62,9 +69,12 @@ export async function middleware(request: NextRequest) {
       pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
   );
 
-  // Protected routes are handled client-side by AuthGuard (opens auth modal)
-  // Only run server-side auth checks for auth routes and admin routes
-  if (!isAuthRoute && !isAdminRoute) {
+  // Skip auth checks for the landing page
+  const isLandingPage = pathWithoutLocale === '/' || pathWithoutLocale === '';
+
+  // We need auth checks for: protected routes, auth routes, onboarding routes, admin routes
+  // Skip only for landing page and unrecognized routes
+  if (!isProtectedRoute && !isAuthRoute && !isAdminRoute && !isOnboardingRoute && !isLandingPage) {
     return intlResponse;
   }
 
@@ -72,7 +82,6 @@ export async function middleware(request: NextRequest) {
   const { supabase, response: supabaseResponse, user } = await createClient(request);
 
   // Merge cookies from intl middleware into supabase response
-  // This ensures locale cookies are preserved alongside auth cookies
   const finalResponse = supabaseResponse;
 
   // Copy cookies from intl response to final response
@@ -89,36 +98,55 @@ export async function middleware(request: NextRequest) {
 
   // Step 3: Apply route protection logic
 
-  // Redirect authenticated users from auth routes (login, signup) to home
-  if (user && isAuthRoute) {
-    return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+  // Onboarding routes: allow authenticated users, redirect unauthenticated users
+  if (isOnboardingRoute) {
+    if (!user) {
+      return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
+    }
+    return finalResponse;
   }
 
-  // Check admin routes - requires fetching user profile
-  if (isAdminRoute) {
-    // Unauthenticated users trying to access admin routes
-    if (!user) {
-      return NextResponse.redirect(new URL(`/${locale}`, request.url));
-    }
+  // Landing page: no auth enforcement needed, just pass through
+  if (isLandingPage) {
+    return finalResponse;
+  }
 
-    // Fetch user profile to check role
+  // For authenticated users on any non-onboarding route, enforce onboarding completion
+  if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role, approval_status')
+      .select('role, approval_status, company_name, onboarding_completed')
       .eq('id', user.id)
       .single();
 
-    // Redirect non-admin users from admin routes
-    if (
-      !profile ||
-      profile.role !== 'admin' ||
-      profile.approval_status !== 'approved'
-    ) {
+    // If onboarding not completed → go to signup/onboarding
+    if (!profile || !profile.onboarding_completed) {
+      return NextResponse.redirect(new URL(`/${locale}/signup/onboarding`, request.url));
+    }
+
+    // Onboarding done: redirect away from auth routes (login, signup)
+    if (isAuthRoute) {
       return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
     }
+
+    // Admin routes: check role
+    if (isAdminRoute) {
+      if (profile.role !== 'admin' || profile.approval_status !== 'approved') {
+        return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      }
+    }
+
+    return finalResponse;
   }
 
-  // Return the response with both locale and auth cookies
+  // Unauthenticated users on admin routes → redirect to landing
+  if (isAdminRoute) {
+    return NextResponse.redirect(new URL(`/${locale}`, request.url));
+  }
+
+  // Unauthenticated users on auth routes (login, signup) → allow through
+  // Unauthenticated users on protected routes → handled client-side by AuthGuard
+
   return finalResponse;
 }
 

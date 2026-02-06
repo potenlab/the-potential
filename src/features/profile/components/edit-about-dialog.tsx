@@ -4,10 +4,8 @@
  * Edit About Dialog Component
  *
  * Dialog for editing the "About" section of the user profile.
- * Uses:
- * - Form, Input from @/components/ui/
- * - react-hook-form for form handling
- * - zod for validation
+ * Includes: full_name, company_name, username, nickname, bio
+ * All fields persist to the Supabase `profiles` table.
  */
 
 import * as React from 'react';
@@ -15,7 +13,7 @@ import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { User, Building2 } from 'lucide-react';
+import { User, Building2, AtSign, UserCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -33,6 +31,7 @@ import {
   FormLabel,
   FormControl,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -55,9 +54,24 @@ const aboutFormSchema = z.object({
     .max(100, 'Company name must be less than 100 characters')
     .optional()
     .nullable(),
+  username: z
+    .string()
+    .min(2, 'Username must be at least 2 characters')
+    .max(30, 'Username must be less than 30 characters')
+    .regex(
+      /^[a-z0-9_-]+$/,
+      'Username can only contain lowercase letters, numbers, _ and -'
+    )
+    .optional()
+    .nullable(),
+  nickname: z
+    .string()
+    .max(50, 'Nickname must be less than 50 characters')
+    .optional()
+    .nullable(),
   bio: z
     .string()
-    .max(500, 'Bio must be less than 500 characters')
+    .max(200, 'Bio must be less than 200 characters')
     .optional()
     .nullable(),
 });
@@ -80,7 +94,6 @@ export function EditAboutDialog({
   isLoading,
 }: EditAboutDialogProps) {
   const t = useTranslations('profile');
-  const tValidation = useTranslations('validation');
   const tCommon = useTranslations('common');
 
   const form = useForm<AboutFormValues>({
@@ -88,7 +101,9 @@ export function EditAboutDialog({
     defaultValues: {
       full_name: profile.full_name || '',
       company_name: profile.company_name || '',
-      bio: '',
+      username: profile.username || '',
+      nickname: profile.nickname || '',
+      bio: profile.bio || '',
     },
   });
 
@@ -98,7 +113,9 @@ export function EditAboutDialog({
       form.reset({
         full_name: profile.full_name || '',
         company_name: profile.company_name || '',
-        bio: '',
+        username: profile.username || '',
+        nickname: profile.nickname || '',
+        bio: profile.bio || '',
       });
     }
   }, [open, profile, form]);
@@ -108,6 +125,9 @@ export function EditAboutDialog({
       const updateData: Partial<Profile> = {
         full_name: values.full_name,
         company_name: values.company_name || null,
+        username: values.username || null,
+        nickname: values.nickname || null,
+        bio: values.bio || null,
       };
 
       const { error } = await supabase
@@ -141,25 +161,12 @@ export function EditAboutDialog({
 
         {isLoading ? (
           <div className="space-y-4">
-            {/* Field 1: Name */}
-            <div className="space-y-2">
-              <Skeleton variant="lighter" className="h-4 w-20" />
-              <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
-            </div>
-
-            {/* Field 2: Company */}
-            <div className="space-y-2">
-              <Skeleton variant="lighter" className="h-4 w-28" />
-              <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
-            </div>
-
-            {/* Field 3: Bio */}
-            <div className="space-y-2">
-              <Skeleton variant="lighter" className="h-4 w-16" />
-              <Skeleton variant="lighter" className="h-[100px] w-full rounded-xl" />
-            </div>
-
-            {/* Footer buttons */}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="space-y-2">
+                <Skeleton variant="lighter" className="h-4 w-20" />
+                <Skeleton variant="lighter" className="h-10 w-full rounded-xl" />
+              </div>
+            ))}
             <div className="flex justify-end gap-2">
               <Skeleton variant="lighter" className="h-10 w-20" />
               <Skeleton variant="lighter" className="h-10 w-20" />
@@ -181,6 +188,50 @@ export function EditAboutDialog({
                         {...field}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="nickname"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>닉네임</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="표시될 닉네임을 입력하세요"
+                        leftIcon={<UserCircle className="h-4 w-4" />}
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-sm text-muted">
+                      다른 사용자에게 표시되는 이름입니다
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>사용자명</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="영문 소문자, 숫자, _, -"
+                        leftIcon={<AtSign className="h-4 w-4" />}
+                        {...field}
+                        value={field.value || ''}
+                      />
+                    </FormControl>
+                    <FormDescription className="text-sm text-muted">
+                      @username 형태로 표시됩니다
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -213,12 +264,16 @@ export function EditAboutDialog({
                     <FormLabel>{t('fields.bio')}</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Tell us about yourself..."
+                        placeholder="자기소개를 입력하세요 (최대 200자)"
                         className="min-h-[100px]"
+                        maxLength={200}
                         {...field}
                         value={field.value || ''}
                       />
                     </FormControl>
+                    <FormDescription className="text-sm text-muted">
+                      {(field.value || '').length}/200
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

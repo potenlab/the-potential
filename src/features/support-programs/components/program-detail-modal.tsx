@@ -165,12 +165,12 @@ export function ProgramDetailModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className={cn('max-h-[90vh] overflow-y-auto sm:max-w-2xl', className)}
+        className={cn('flex max-h-[90vh] flex-col sm:max-w-2xl', className)}
         showCloseButton={true}
       >
-        {/* Header with Image */}
+        {/* Header with Image - Fixed at top, edge-to-edge */}
         {program.image_url && (
-          <div className="-mx-6 -mt-6 mb-4 md:-mx-8 md:-mt-8">
+          <div className="shrink-0 -mx-8 -mt-8 md:-mx-10 md:-mt-10">
             <div className="relative h-48 w-full overflow-hidden rounded-t-3xl">
               <img
                 src={program.image_url}
@@ -181,7 +181,7 @@ export function ProgramDetailModal({
               <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
               {/* Category badge */}
               <div className="absolute left-4 top-4">
-                <Badge variant="default" size="md">
+                <Badge variant="default" size="md" className="bg-primary text-white border-transparent">
                   {tCategories(program.category)}
                 </Badge>
               </div>
@@ -189,8 +189,10 @@ export function ProgramDetailModal({
           </div>
         )}
 
-        {/* Dialog Header */}
-        <DialogHeader>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto -mx-8 px-8 md:-mx-10 md:px-10" style={{ scrollbarGutter: 'stable' }}>
+          {/* Dialog Header */}
+          <DialogHeader className="pt-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
               <DialogTitle className="text-2xl">{program.title}</DialogTitle>
@@ -329,9 +331,10 @@ export function ProgramDetailModal({
             </>
           )}
         </div>
+        </div>
 
-        {/* Footer Actions */}
-        <DialogFooter className="mt-6 flex-col gap-3 sm:flex-row">
+        {/* Footer Actions - Fixed at bottom */}
+        <DialogFooter className="flex-col gap-3 sm:flex-row -mx-8 px-8 md:-mx-10 md:px-10 -mb-8 pb-8 md:-mb-10 md:pb-10 pt-4 border-t border-white/10 shrink-0">
           {/* Bookmark Button */}
           <Button
             variant="outline"

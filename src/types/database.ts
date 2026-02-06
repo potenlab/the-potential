@@ -29,6 +29,17 @@ export interface Database {
           role: Database['public']['Enums']['user_role'];
           approval_status: Database['public']['Enums']['approval_status'];
           rejection_reason: string | null;
+          region: string | null;
+          industry: string | null;
+          level: string | null;
+          username: string | null;
+          nickname: string | null;
+          bio: string | null;
+          sub_region: string | null;
+          sub_industry: string | null;
+          business_type: string | null;
+          business_stage: string | null;
+          onboarding_completed: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -41,6 +52,17 @@ export interface Database {
           role?: Database['public']['Enums']['user_role'];
           approval_status?: Database['public']['Enums']['approval_status'];
           rejection_reason?: string | null;
+          region?: string | null;
+          industry?: string | null;
+          level?: string | null;
+          username?: string | null;
+          nickname?: string | null;
+          bio?: string | null;
+          sub_region?: string | null;
+          sub_industry?: string | null;
+          business_type?: string | null;
+          business_stage?: string | null;
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -53,6 +75,17 @@ export interface Database {
           role?: Database['public']['Enums']['user_role'];
           approval_status?: Database['public']['Enums']['approval_status'];
           rejection_reason?: string | null;
+          region?: string | null;
+          industry?: string | null;
+          level?: string | null;
+          username?: string | null;
+          nickname?: string | null;
+          bio?: string | null;
+          sub_region?: string | null;
+          sub_industry?: string | null;
+          business_type?: string | null;
+          business_stage?: string | null;
+          onboarding_completed?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -537,6 +570,64 @@ export interface Database {
           }
         ];
       };
+      user_events: {
+        Row: {
+          id: number;
+          author_id: string;
+          title: string;
+          description: string | null;
+          event_type: Database['public']['Enums']['event_type'];
+          category: Database['public']['Enums']['program_category'] | null;
+          image_url: string | null;
+          external_url: string | null;
+          event_date: string | null;
+          location: string | null;
+          is_active: boolean;
+          view_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: number;
+          author_id: string;
+          title: string;
+          description?: string | null;
+          event_type?: Database['public']['Enums']['event_type'];
+          category?: Database['public']['Enums']['program_category'] | null;
+          image_url?: string | null;
+          external_url?: string | null;
+          event_date?: string | null;
+          location?: string | null;
+          is_active?: boolean;
+          view_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: number;
+          author_id?: string;
+          title?: string;
+          description?: string | null;
+          event_type?: Database['public']['Enums']['event_type'];
+          category?: Database['public']['Enums']['program_category'] | null;
+          image_url?: string | null;
+          external_url?: string | null;
+          event_date?: string | null;
+          location?: string | null;
+          is_active?: boolean;
+          view_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_events_author_id_fkey';
+            columns: ['author_id'];
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          }
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -545,6 +636,7 @@ export interface Database {
       approval_status: 'pending' | 'approved' | 'rejected' | 'suspended';
       likeable_type: 'post' | 'comment';
       expert_status: 'draft' | 'pending_review' | 'approved' | 'rejected';
+      event_type: 'event' | 'ad' | 'announcement';
       expert_category:
         | 'marketing'
         | 'development'

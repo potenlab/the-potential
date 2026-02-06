@@ -121,6 +121,7 @@ function DeadlineBadge({
  */
 export function ProgramCard({ program, className, onClick, fullWidth = false }: ProgramCardProps) {
   const t = useTranslations('supportPrograms.card');
+  const tCategories = useTranslations('supportPrograms.categories');
   const bookmarkMutation = useBookmarkMutation();
 
   const { title, organization, category, application_deadline, image_url, description, is_bookmarked } = program;
@@ -175,8 +176,8 @@ export function ProgramCard({ program, className, onClick, fullWidth = false }: 
             />
             {/* Category Badge - Positioned over image */}
             <div className="absolute left-3 top-3">
-              <Badge variant="default" size="sm">
-                {category}
+              <Badge variant="default" size="sm" className="bg-primary text-white border-transparent">
+                {tCategories(category)}
               </Badge>
             </div>
             {/* Bookmark Button - Positioned over image */}
@@ -206,7 +207,7 @@ export function ProgramCard({ program, className, onClick, fullWidth = false }: 
           {!image_url && (
             <div className="mb-3 flex items-center justify-between">
               <Badge variant="default" size="sm">
-                {category}
+                {tCategories(category)}
               </Badge>
               <button
                 type="button"

@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation';
 
 /**
- * /home now redirects to the locale root (/) where the landing page lives.
- * This ensures existing links to /home still work.
+ * /home now redirects to support-programs.
+ * The landing page is now the About page at /.
+ * This ensures existing links to /home redirect to the main feature area.
  */
 export default async function HomeRedirectPage({
   params,
@@ -10,5 +11,5 @@ export default async function HomeRedirectPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect(`/${locale}`);
+  redirect(`/${locale}/support-programs`);
 }

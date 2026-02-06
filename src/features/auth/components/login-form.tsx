@@ -99,23 +99,33 @@ export function LoginForm({ onSwitchToSignup, onSuccess, isModal }: LoginFormPro
       // Check user role and approval status to determine redirect destination
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role, approval_status')
+        .select('role, approval_status, company_name, onboarding_completed')
         .eq('id', signInData.user.id)
         .single();
 
-      // If no profile or not approved, sign out and show pending message
-      if (!profile || profile.approval_status !== 'approved') {
-        await supabase.auth.signOut();
-        setError(t('pendingApproval'));
+      if (!profile || !profile.onboarding_completed) {
+        // Redirect to onboarding if not completed
+        router.push('/signup/onboarding');
+        onSuccess?.();
         return;
       }
 
+      // Auto-approve if not yet approved
+      if (profile.approval_status !== 'approved') {
+        await supabase
+          .from('profiles')
+          .update({ approval_status: 'approved' })
+          .eq('id', signInData.user.id);
+      }
+
+      // Redirect based on role
       if (profile.role === 'admin') {
         router.push('/admin');
       } else {
-        router.push('/home');
+        router.push('/support-programs');
       }
       onSuccess?.();
+      return;
     } catch {
       setError(t('loginFailed'));
     } finally {

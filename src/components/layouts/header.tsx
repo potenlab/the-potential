@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Home, TrendingUp, MessageCircle, UserSearch, LogIn } from 'lucide-react';
+import { LogOut, TrendingUp, MessageCircle, UserSearch, LogIn, CalendarDays } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -43,8 +43,8 @@ import { NotificationPopover } from '@/features/notifications';
 
 /** Navigation items configuration with translation keys and icons */
 const navItems = [
-  { href: '/', labelKey: 'home', icon: Home },
   { href: '/support-programs', labelKey: 'support', icon: TrendingUp },
+  { href: '/events', labelKey: 'events', icon: CalendarDays },
   { href: '/thread', labelKey: 'thread', icon: MessageCircle },
   { href: '/experts', labelKey: 'experts', icon: UserSearch },
 ] as const;
@@ -91,10 +91,7 @@ export function Header() {
         {/* Navigation - Desktop Only */}
         <nav className="hidden md:flex items-center gap-2 relative">
           {navItems.map((item) => {
-            const isActive =
-              item.href === '/'
-                ? pathname === '/' || pathname === ''
-                : pathname.startsWith(item.href);
+            const isActive = pathname.startsWith(item.href);
             const Icon = item.icon;
             return (
               <Link
@@ -148,7 +145,7 @@ export function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className="focus:outline-none focus:ring-2 focus:ring-[#0079FF] rounded-full transition-transform hover:scale-105"
+                    className="focus:outline-none rounded-full transition-transform hover:scale-105 cursor-pointer"
                     aria-label={t('profile')}
                   >
                     <Avatar size="md" showStatus statusColor="success">
@@ -167,14 +164,6 @@ export function Header() {
                       className="cursor-pointer hover:bg-white/5 focus:bg-white/5 rounded-xl text-base py-2.5"
                     >
                       {t('profile')}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link
-                      href="/expert-registration"
-                      className="cursor-pointer hover:bg-white/5 focus:bg-white/5 rounded-xl text-base py-2.5"
-                    >
-                      {t('expertRegistration')}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-white/10" />

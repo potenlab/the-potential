@@ -194,6 +194,16 @@ export function useApproveExpert() {
         throw new Error(`Failed to approve expert: ${updateError.message}`);
       }
 
+      // Update user profile role to 'expert'
+      const { error: roleError } = await supabase
+        .from('profiles')
+        .update({ role: 'expert' })
+        .eq('id', userId);
+
+      if (roleError) {
+        throw new Error(`Failed to update user role: ${roleError.message}`);
+      }
+
       // Create notification for the expert user (optional - if notifications table exists)
       // This will fail silently if the table doesn't exist
       try {
@@ -252,6 +262,16 @@ export function useRejectExpert() {
 
       if (updateError) {
         throw new Error(`Failed to reject expert: ${updateError.message}`);
+      }
+
+      // Revert user profile role back to 'member'
+      const { error: roleError } = await supabase
+        .from('profiles')
+        .update({ role: 'member' })
+        .eq('id', userId);
+
+      if (roleError) {
+        throw new Error(`Failed to update user role: ${roleError.message}`);
       }
 
       // Create notification for the expert user (optional)
