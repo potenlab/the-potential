@@ -87,7 +87,15 @@ export async function updateSession(request: NextRequest) {
   const locale = localeMatch ? localeMatch[1] : 'ko';
   const pathWithoutLocale = pathname.replace(/^\/(ko|en)/, '') || '/';
 
-  // Protected routes are handled client-side by AuthGuard (opens auth modal)
+  // Check if path matches protected routes
+  const isProtectedRoute = routeConfig.protectedRoutes.some(
+    (route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
+  );
+
+  // Redirect unauthenticated users from protected routes to home
+  if (isProtectedRoute && !user) {
+    return NextResponse.redirect(new URL(`/${locale}/about`, request.url));
+  }
 
   // Check if this is an onboarding route first
   const isOnboardingRoute = routeConfig.onboardingRoutes.some(
@@ -115,6 +123,11 @@ export async function updateSession(request: NextRequest) {
   // Redirect authenticated users from auth routes to home
   if (user && isAuthRoute) {
     return NextResponse.redirect(new URL(`/${locale}`, request.url));
+  }
+
+  // Redirect unauthenticated users from admin routes
+  if (isAdminRoute && !user) {
+    return NextResponse.redirect(new URL(`/${locale}/about`, request.url));
   }
 
   // Check admin routes - requires fetching user profile
