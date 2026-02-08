@@ -45,9 +45,13 @@ export async function createClient(request: NextRequest) {
   // IMPORTANT: DO NOT remove auth.getUser()
   // This refreshes the auth token if expired and updates cookies
   // Removing this will cause users to be logged out after token expiration
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Anonymous user — continue without user
+  }
 
   return { supabase, response: supabaseResponse, user };
 }

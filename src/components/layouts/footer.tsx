@@ -6,45 +6,13 @@ import { motion } from 'framer-motion';
 import { Link } from '@/i18n/navigation';
 import {
   ArrowRight,
-  TrendingUp,
-  MessageCircle,
-  UserSearch,
   Mail,
 } from 'lucide-react';
 
-import { cn } from '@/lib/cn';
 import { Logo } from '@/components/common/logo';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthModalStore } from '@/stores/auth-modal-store';
-
-/** Explore cards config mapping to footer translations */
-const exploreCards = [
-  {
-    key: 'programs' as const,
-    href: '/support-programs',
-    icon: TrendingUp,
-    gradient: 'from-blue-500/20 to-blue-500/5',
-    iconColor: 'text-blue-400',
-    iconBg: 'bg-blue-500/10',
-  },
-  {
-    key: 'thread' as const,
-    href: '/thread',
-    icon: MessageCircle,
-    gradient: 'from-emerald-500/20 to-emerald-500/5',
-    iconColor: 'text-emerald-400',
-    iconBg: 'bg-emerald-500/10',
-  },
-  {
-    key: 'experts' as const,
-    href: '/experts',
-    icon: UserSearch,
-    gradient: 'from-purple-500/20 to-purple-500/5',
-    iconColor: 'text-purple-400',
-    iconBg: 'bg-purple-500/10',
-  },
-] as const;
 
 /** Quick links that map to footer.links translations */
 const quickLinks = [
@@ -96,72 +64,6 @@ export function Footer() {
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#0079FF]/30 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-4 md:px-8">
-        {/* Explore Section */}
-        <div className="py-12 md:py-16">
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="mb-6 text-xs font-semibold tracking-[0.2em] text-[#8B95A1]/60"
-          >
-            {t('explore')}
-          </motion.p>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            {exploreCards.map((card, index) => {
-              const Icon = card.icon;
-              return (
-                <motion.div
-                  key={card.key}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1, duration: 0.4 }}
-                >
-                  <Link href={card.href} className="group block">
-                    <div
-                      className={cn(
-                        'relative overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 transition-all duration-300',
-                        'hover:border-white/[0.12] hover:bg-white/[0.04]'
-                      )}
-                    >
-                      {/* Hover gradient */}
-                      <div
-                        className={cn(
-                          'absolute inset-0 bg-gradient-to-br opacity-0 transition-opacity duration-500 group-hover:opacity-100',
-                          card.gradient
-                        )}
-                      />
-
-                      <div className="relative z-10 flex items-start gap-4">
-                        <div
-                          className={cn(
-                            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-300 group-hover:scale-110',
-                            card.iconBg
-                          )}
-                        >
-                          <Icon className={cn('h-5 w-5', card.iconColor)} />
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-semibold text-white">
-                            {t(`exploreCards.${card.key}.title`)}
-                          </h3>
-                          <p className="mt-1 text-xs leading-relaxed text-[#8B95A1]">
-                            {t(`exploreCards.${card.key}.description`)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Divider */}
-        <div className="h-px bg-white/[0.06]" />
-
         {/* CTA Section - only for non-authenticated users */}
         {!loading && !isAuthenticated && (
           <>
@@ -204,7 +106,7 @@ export function Footer() {
           <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
             {/* Brand */}
             <div className="max-w-xs">
-              <Logo height={18} className="opacity-80" />
+              <Logo height={18} fill="#4B5563" />
               <p className="mt-3 text-sm leading-relaxed text-[#8B95A1]/80">
                 {t('description')}
               </p>

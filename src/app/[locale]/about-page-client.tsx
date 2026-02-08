@@ -22,9 +22,6 @@ import { ArrowRight, Sparkles, Shield, Rocket, Heart, FileText } from 'lucide-re
 import { cn } from '@/lib/cn';
 import { Link } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
-import { Header } from '@/components/layouts/header';
-import { Footer } from '@/components/layouts/footer';
-import { BottomNav } from '@/components/layouts/bottom-nav';
 import { useAuth } from '@/hooks/use-auth';
 import { useAuthModalStore } from '@/stores/auth-modal-store';
 
@@ -429,22 +426,14 @@ export default function AboutPageClient() {
   }, [isPending, isAuthError, t]);
 
   return (
-    <div className="bg-background relative min-h-screen">
-      <Header />
-      <main className="pt-20 pb-24 md:pb-8">
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="mx-auto max-w-7xl px-4 md:px-8"
-        >
-          <HeroSection />
-          <ValuePropsSection />
-          <SupportProgramsCTA />
-        </motion.div>
-      </main>
-      <Footer />
-      <BottomNav />
-    </div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <HeroSection />
+      <ValuePropsSection />
+      <SupportProgramsCTA />
+    </motion.div>
   );
 }
