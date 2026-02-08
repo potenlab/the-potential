@@ -69,16 +69,13 @@ export async function middleware(request: NextRequest) {
       pathWithoutLocale === route || pathWithoutLocale.startsWith(`${route}/`)
   );
 
-  // Skip auth checks for the landing page
-  const isLandingPage = pathWithoutLocale === '/' || pathWithoutLocale === '';
+  // Determine if this route needs redirect logic (not just token refresh)
+  const needsRedirectLogic =
+    isProtectedRoute || isAuthRoute || isAdminRoute || isOnboardingRoute;
 
-  // We need auth checks for: protected routes, auth routes, onboarding routes, admin routes
-  // Skip only for landing page and unrecognized routes
-  if (!isProtectedRoute && !isAuthRoute && !isAdminRoute && !isOnboardingRoute && !isLandingPage) {
-    return intlResponse;
-  }
-
-  // Step 2: Create Supabase client and get user session
+  // Step 2: Create Supabase client and refresh auth tokens for ALL locale routes.
+  // This is critical — even public pages (thread, support-programs) need fresh
+  // auth cookies so the client-side Supabase client works properly.
   const { supabase, response: supabaseResponse, user } = await createClient(request);
 
   // Merge cookies from intl middleware into supabase response
@@ -96,7 +93,13 @@ export async function middleware(request: NextRequest) {
     });
   });
 
-  // Step 3: Apply route protection logic
+  // Step 3: Apply route protection logic (only for routes that need it)
+
+  // Public routes (thread, support-programs, about, etc.) — just pass through
+  // with refreshed auth cookies
+  if (!needsRedirectLogic) {
+    return finalResponse;
+  }
 
   // Onboarding routes: allow authenticated users, redirect unauthenticated users
   if (isOnboardingRoute) {
@@ -106,12 +109,7 @@ export async function middleware(request: NextRequest) {
     return finalResponse;
   }
 
-  // Landing page: no auth enforcement needed, just pass through
-  if (isLandingPage) {
-    return finalResponse;
-  }
-
-  // For authenticated users on any non-onboarding route, enforce onboarding completion
+  // For authenticated users on protected/auth/admin routes, enforce onboarding completion
   if (user) {
     // Query profile; if the query fails let the request through (AuthGuard handles client-side)
     const { data: profile, error: profileError } = await supabase
@@ -121,10 +119,7 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (profileError || !profile) {
-      // Profile query failed — don't redirect to prevent loops.
-      // Let the page load; client-side AuthGuard will handle if needed.
       if (isAuthRoute) {
-        // Authenticated but profile error on auth route → redirect to home
         return NextResponse.redirect(new URL(`/${locale}/support-programs`, request.url));
       }
       return finalResponse;
