@@ -56,10 +56,14 @@ async function fetchSupportPrograms(
     sortOrder = 'asc',
   } = params;
 
-  // Get current user for bookmark status check
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Get current user for bookmark status check (gracefully handle anon users)
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Anonymous user — continue without bookmark status
+  }
 
   // Build the base query - only fetch published programs
   let query = supabase

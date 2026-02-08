@@ -39,10 +39,14 @@ const FEED_PAGE_SIZE = 20;
  * Uses cursor-based pagination for stable infinite scroll
  */
 async function fetchPostsPage(cursor?: FeedCursor): Promise<FeedPage> {
-  // Get current user for like status check
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Get current user for like status check (gracefully handle anon users)
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Anonymous user — continue without like/bookmark status
+  }
 
   // Build the query
   let query = supabase
@@ -174,9 +178,13 @@ export function usePosts() {
  * Fetches a single post by ID with author information
  */
 async function fetchPost(id: number): Promise<PostWithAuthor> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Anonymous user
+  }
 
   const { data: post, error } = await supabase
     .from('posts')
@@ -270,9 +278,13 @@ export function usePost(id: number) {
  * Fetches comments for a post, organized with nested replies
  */
 async function fetchComments(postId: number): Promise<CommentWithAuthor[]> {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  let user = null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    user = data.user;
+  } catch {
+    // Anonymous user
+  }
 
   const { data: rawComments, error } = await supabase
     .from('comments')
