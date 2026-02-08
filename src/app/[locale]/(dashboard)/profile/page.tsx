@@ -1,52 +1,27 @@
 'use client';
 
 /**
- * Profile Page
+ * My Page (마이페이지)
  *
- * User profile page with:
- * - Profile completeness percentage calculation based on onboarding fields
- * - Editable sections using Dialog-based forms
- * - Changes persist to database via Supabase
- * - Profile photo upload capability
- * - Activity stats with real data from useUserActivity
- * - Displays onboarding data: username, nickname, region, industry, business_type, business_stage
- * - Stacked sections: Profile details, Activity, Bookmarks
- * - Uses Avatar, Badge, Progress, Accordion from @/components/ui/
- * - All labels use translations from useTranslations('profile')
+ * Two-column layout:
+ * - Left sidebar: avatar, name, username, bio, edit/share buttons
+ * - Right content: basic info cards, activity tabs, interests tabs, settings
  */
 
 import * as React from 'react';
-import { useTranslations } from 'next-intl';
-import { motion } from 'framer-motion';
 import {
-  User,
-  Mail,
-  Building2,
-  Briefcase,
   Camera,
-  Edit2,
-  CheckCircle,
-  AlertCircle,
+  Settings,
   MapPin,
-  Landmark,
-  TrendingUp,
-  AtSign,
+  Globe,
+  AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/cn';
 import { supabase } from '@/lib/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton, SkeletonAvatar } from '@/components/ui/skeleton';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 
 import {
@@ -54,17 +29,14 @@ import {
   EditExpertiseDialog,
   ActivityTab,
   BookmarksTab,
-  CollaborationsTab,
 } from '@/features/profile/components';
-
-import { useUserActivity } from '@/features/profile/api/queries';
 
 import type { Database } from '@/types/database';
 
 type Profile = Database['public']['Tables']['profiles']['Row'];
 
 // ---------------------------------------------------------------------------
-// Label lookup maps (matching onboarding data)
+// Label lookup maps
 // ---------------------------------------------------------------------------
 
 const INDUSTRY_LABELS: Record<string, string> = {
@@ -124,7 +96,7 @@ const BUSINESS_STAGE_LABELS: Record<string, Record<string, string>> = {
 };
 
 // ---------------------------------------------------------------------------
-// Helper functions
+// Helpers
 // ---------------------------------------------------------------------------
 
 function getIndustryLabel(key: string | null): string | null {
@@ -149,88 +121,80 @@ function getBusinessStageLabel(businessType: string | null, stageKey: string | n
 
 function getRegionDisplay(region: string | null, subRegion: string | null): string | null {
   if (!region) return null;
-  if (subRegion && subRegion !== '전체') {
-    return `${region} ${subRegion}`;
-  }
+  if (subRegion && subRegion !== '전체') return `${region} ${subRegion}`;
   return region;
 }
 
-/**
- * Get initials from a name for avatar fallback
- */
 function getInitials(name: string | null): string {
   if (!name) return '?';
   const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) {
-    return parts[0].slice(0, 2).toUpperCase();
-  }
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-/**
- * Calculate profile completeness percentage based on onboarding fields
- */
-function calculateCompleteness(profile: Profile | null): number {
-  if (!profile) return 0;
-
-  const fields = [
-    { field: profile.full_name, weight: 15 },
-    { field: profile.avatar_url, weight: 10 },
-    { field: profile.nickname, weight: 10 },
-    { field: profile.username, weight: 10 },
-    { field: profile.bio, weight: 10 },
-    { field: profile.region, weight: 10 },
-    { field: profile.industry, weight: 10 },
-    { field: profile.business_type, weight: 10 },
-    { field: profile.business_stage, weight: 5 },
-    { field: profile.company_name, weight: 5 },
-    { field: profile.email, weight: 5 },
-  ];
-
-  const totalWeight = fields.reduce((sum, f) => sum + f.weight, 0);
-  const achievedWeight = fields
-    .filter((f) => {
-      if (typeof f.field === 'boolean') return f.field === true;
-      return f.field && String(f.field).trim() !== '';
-    })
-    .reduce((sum, f) => sum + f.weight, 0);
-
-  return Math.min(100, Math.round((achievedWeight / totalWeight) * 100));
+function getBusinessStageNumber(businessType: string | null, stageKey: string | null): string | null {
+  if (!businessType || !stageKey) return null;
+  const stages = BUSINESS_STAGE_LABELS[businessType];
+  if (!stages) return null;
+  const keys = Object.keys(stages);
+  const idx = keys.indexOf(stageKey);
+  if (idx === -1) return null;
+  return String(idx + 1).padStart(2, '0');
 }
 
-/**
- * Info Row Component for displaying profile data
- */
-function InfoRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon?: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string | null | undefined;
-}) {
-  const displayValue = value || '-';
+// ---------------------------------------------------------------------------
+// Info Card
+// ---------------------------------------------------------------------------
 
+function InfoCard({
+  icon,
+  iconColor,
+  iconBg,
+  label,
+  sublabel,
+  cardBg,
+  cardBorder,
+  textColor,
+}: {
+  icon: React.ReactNode;
+  iconColor?: string;
+  iconBg?: string;
+  label: string | null;
+  sublabel?: string | null;
+  cardBg?: string;
+  cardBorder?: string;
+  textColor?: string;
+}) {
   return (
-    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-      <p className="text-sm text-muted">{label}</p>
-      <div className="mt-1 flex items-center gap-2">
-        {Icon && <Icon className="h-4 w-4 text-muted" />}
-        <p className="font-medium text-white">{displayValue}</p>
-      </div>
+    <div
+      className={cn(
+        'flex flex-col items-center justify-center rounded-2xl border p-5 text-center min-h-[140px]',
+        cardBg || 'bg-white/[0.02]',
+        cardBorder || 'border-white/[0.08]'
+      )}
+    >
+      {icon && (
+        <div className={cn('mb-3 flex h-10 w-10 items-center justify-center rounded-full', iconBg)}>
+          <span className={iconColor}>{icon}</span>
+        </div>
+      )}
+      <p className={cn('text-base font-bold', textColor || 'text-white')}>
+        {label || '-'}
+      </p>
+      {sublabel && (
+        <p className="mt-0.5 text-sm text-[#8b95a1]">
+          ({sublabel})
+        </p>
+      )}
     </div>
   );
 }
 
-/**
- * Profile Page Component
- */
-export default function ProfilePage() {
-  const t = useTranslations('profile');
-  const tCommon = useTranslations('common');
+// ---------------------------------------------------------------------------
+// Main Page
+// ---------------------------------------------------------------------------
 
-  // State
+export default function ProfilePage() {
   const [profile, setProfile] = React.useState<Profile | null>(null);
   const [isLoading, setIsLoading] = React.useState(true);
   const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
@@ -240,36 +204,24 @@ export default function ProfilePage() {
   const [aboutDialogOpen, setAboutDialogOpen] = React.useState(false);
   const [expertiseDialogOpen, setExpertiseDialogOpen] = React.useState(false);
 
-  // Fetch profile data
+  // Fetch profile
   const fetchProfile = React.useCallback(async () => {
     try {
       setIsLoading(true);
-
-      // Get current user
       const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
+      if (userError || !user) return;
 
-      if (userError || !user) {
-        console.error('Error fetching user:', userError);
-        return;
-      }
-
-      // Fetch profile
       const { data: profileData, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (error || !profileData) {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-
-      const typedProfile = profileData as Profile;
-      setProfile(typedProfile);
+      if (error || !profileData) return;
+      setProfile(profileData as Profile);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -281,32 +233,15 @@ export default function ProfilePage() {
     fetchProfile();
   }, [fetchProfile]);
 
-  // Fetch activity stats with real data
-  const { data: activityStats } = useUserActivity(profile?.id);
-
-  // Handle avatar upload
-  const handleAvatarUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  // Avatar upload
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !profile) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be smaller than 5MB');
-      return;
-    }
+    if (!file.type.startsWith('image/')) { toast.error('이미지 파일만 업로드 가능합니다'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('5MB 이하 이미지만 업로드 가능합니다'); return; }
 
     try {
       setUploadingAvatar(true);
-
-      // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${profile.id}-${Date.now()}.${fileExt}`;
       const filePath = `${profile.id}/${fileName}`;
@@ -314,537 +249,254 @@ export default function ProfilePage() {
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file, { upsert: true });
-
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
 
-      // Update profile with new avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
         .eq('id', profile.id);
-
       if (updateError) throw updateError;
 
-      // Update local state
       setProfile((prev) => (prev ? { ...prev, avatar_url: publicUrl } : null));
-
-      toast.success('Profile photo updated');
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      toast.error('Failed to upload photo');
+      toast.success('프로필 사진이 업데이트되었습니다');
+    } catch {
+      toast.error('사진 업로드에 실패했습니다');
     } finally {
       setUploadingAvatar(false);
     }
   };
 
-  // Handle about section update
   const handleAboutUpdate = (updatedData: Partial<Profile>) => {
     setProfile((prev) => (prev ? { ...prev, ...updatedData } : null));
   };
 
-  // Handle expertise update
   const handleExpertiseUpdate = (updatedData: Partial<Profile>) => {
     setProfile((prev) => (prev ? { ...prev, ...updatedData } : null));
   };
 
-  // Calculate completeness directly from profile
-  const completeness = calculateCompleteness(profile);
+  const handleShareProfile = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      toast.success('프로필 링크가 복사되었습니다');
+    } catch {
+      toast.error('링크 복사에 실패했습니다');
+    }
+  };
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
-        {/* Title skeleton */}
-        <div>
-          <Skeleton className="h-8 w-48" rounded="md" />
-          <Skeleton className="mt-2 h-4 w-80" rounded="md" />
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <div className="flex flex-col gap-8 lg:flex-row">
+          <div className="w-full lg:w-[280px] shrink-0">
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6">
+              <div className="flex flex-col items-center">
+                <SkeletonAvatar size="xl" />
+                <Skeleton className="mt-4 h-6 w-24" rounded="md" />
+                <Skeleton className="mt-2 h-4 w-20" rounded="md" />
+                <Skeleton className="mt-4 h-4 w-full" rounded="md" />
+                <Skeleton className="mt-2 h-4 w-3/4" rounded="md" />
+                <div className="mt-6 flex w-full gap-3">
+                  <Skeleton className="h-10 flex-1" rounded="xl" />
+                  <Skeleton className="h-10 flex-1" rounded="xl" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex-1 space-y-8">
+            <Skeleton className="h-8 w-32" rounded="md" />
+            <div className="grid gap-4 sm:grid-cols-2">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-[140px]" rounded="2xl" />
+              ))}
+            </div>
+            <Skeleton className="h-6 w-24" rounded="md" />
+            <Skeleton className="h-[200px] w-full" rounded="2xl" />
+          </div>
         </div>
-
-        {/* Profile header card skeleton */}
-        <Card variant="elevated" padding="lg">
-          <CardContent className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-            {/* Avatar placeholder with glow effect area */}
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-white/5 blur-xl scale-110" />
-              <SkeletonAvatar size="xl" className="relative border-4 border-card" />
-            </div>
-
-            {/* Profile info */}
-            <div className="flex-1 text-center md:text-left">
-              <Skeleton className="h-7 w-48" rounded="md" />
-              <Skeleton className="mt-1 h-4 w-32" rounded="md" />
-              <Skeleton className="mt-2 h-4 w-40" rounded="md" />
-              <Skeleton className="mt-3 h-6 w-20 rounded-full" />
-            </div>
-
-            {/* Completeness card */}
-            <div className="w-full md:w-48">
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                <Skeleton className="h-4 w-24" rounded="md" />
-                <Skeleton className="mt-2 h-8 w-16" rounded="md" />
-                <Skeleton className="mt-3 h-2 w-full rounded-full" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Activity card skeleton */}
-        <Card variant="default" padding="lg">
-          <Skeleton className="h-6 w-32" rounded="md" />
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center"
-              >
-                <Skeleton className="mx-auto h-8 w-12" rounded="md" />
-                <Skeleton className="mx-auto mt-1 h-3 w-16" rounded="md" />
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Profile sections skeleton */}
-        <Card variant="default" padding="none">
-          <div className="flex items-center gap-2 border-b border-white/[0.08] px-6 py-4">
-            <Skeleton className="h-5 w-5 rounded-md" />
-            <Skeleton className="h-5 w-24" rounded="md" />
-            <div className="flex-1" />
-            <Skeleton className="h-5 w-5" rounded="md" />
-          </div>
-          <div className="flex items-center gap-2 px-6 py-4">
-            <Skeleton className="h-5 w-5 rounded-md" />
-            <Skeleton className="h-5 w-24" rounded="md" />
-            <div className="flex-1" />
-            <Skeleton className="h-5 w-5" rounded="md" />
-          </div>
-        </Card>
-
-        {/* Activity skeleton */}
-        <Card variant="default" padding="lg">
-          <Skeleton className="h-6 w-32" rounded="md" />
-          <div className="mt-4 space-y-3">
-            <Skeleton className="h-20 w-full" rounded="xl" />
-            <Skeleton className="h-20 w-full" rounded="xl" />
-          </div>
-        </Card>
-
-        {/* Bookmarks skeleton */}
-        <Card variant="default" padding="lg">
-          <Skeleton className="h-6 w-32" rounded="md" />
-          <div className="mt-4 space-y-3">
-            <Skeleton className="h-20 w-full" rounded="xl" />
-            <Skeleton className="h-20 w-full" rounded="xl" />
-          </div>
-        </Card>
       </div>
     );
   }
 
-  // No profile state
   if (!profile) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <AlertCircle className="h-12 w-12 text-muted" />
-        <p className="text-muted">Profile not found</p>
+        <p className="text-muted">프로필을 찾을 수 없습니다</p>
       </div>
     );
   }
 
-  // Derived display values
-  const displayName = profile.nickname || profile.full_name || 'Anonymous User';
+  // Derived values
+  const displayName = profile.nickname || profile.full_name || '사용자';
   const regionDisplay = getRegionDisplay(profile.region, profile.sub_region);
   const industryLabel = getIndustryLabel(profile.industry);
   const subIndustryLabel = getSubIndustryLabel(profile.industry, profile.sub_industry);
   const businessTypeLabel = getBusinessTypeLabel(profile.business_type);
   const businessStageLabel = getBusinessStageLabel(profile.business_type, profile.business_stage);
+  const stageNumber = getBusinessStageNumber(profile.business_type, profile.business_stage);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
-      {/* Page Title */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <h1 className="text-4xl font-bold text-white">{t('title')}</h1>
-        <p className="mt-2 text-muted">{t('completenessDescription')}</p>
-      </motion.div>
-
-      {/* Profile Header Card */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
-      >
-        <Card variant="elevated" padding="lg">
-          <CardContent className="flex flex-col items-center gap-6 md:flex-row md:items-start">
-            {/* Avatar with upload */}
-            <div className="relative group">
-              {/* Glow effect */}
-              <div className="absolute inset-0 rounded-full bg-primary/20 blur-xl scale-110" />
-              <Avatar size="xl" className="relative border-4 border-card">
-                {profile.avatar_url ? (
-                  <AvatarImage
-                    src={profile.avatar_url}
-                    alt={displayName}
-                  />
-                ) : null}
-                <AvatarFallback>
-                  {getInitials(profile.nickname || profile.full_name)}
-                </AvatarFallback>
-              </Avatar>
-
-              {/* Upload overlay */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingAvatar}
-                className={cn(
-                  'absolute inset-0 flex items-center justify-center rounded-full',
-                  'bg-black/60 opacity-0 transition-opacity duration-200',
-                  'group-hover:opacity-100',
-                  'focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-primary',
-                  uploadingAvatar && 'opacity-100'
-                )}
-                aria-label={t('avatar.change')}
-              >
-                {uploadingAvatar ? (
-                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                ) : (
-                  <Camera className="h-8 w-8 text-white" />
-                )}
-              </button>
-
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarUpload}
-                className="hidden"
-                aria-label={t('avatar.upload')}
-              />
-            </div>
-
-            {/* Profile Info */}
-            <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
-                <h2 className="text-3xl font-bold text-white">
-                  {displayName}
-                </h2>
-                {profile.approval_status === 'approved' && (
-                  <Badge variant="success" size="sm" className="gap-1">
-                    <CheckCircle className="h-3 w-3" />
-                    {tCommon('approved')}
-                  </Badge>
-                )}
-                {profile.approval_status === 'pending' && (
-                  <Badge variant="warning" size="sm">
-                    {tCommon('pending')}
-                  </Badge>
-                )}
+    <div className="mx-auto max-w-6xl px-4 py-8">
+      <div className="flex flex-col gap-8 lg:flex-row">
+        {/* ============================================================ */}
+        {/* LEFT SIDEBAR */}
+        {/* ============================================================ */}
+        <div className="w-full lg:w-[280px] shrink-0">
+          <div className="sticky top-28 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-6">
+            <div className="flex flex-col items-center">
+              {/* Avatar */}
+              <div className="relative group">
+                <Avatar size="xl">
+                  {profile.avatar_url ? (
+                    <AvatarImage src={profile.avatar_url} alt={displayName} />
+                  ) : null}
+                  <AvatarFallback>
+                    {getInitials(profile.nickname || profile.full_name)}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingAvatar}
+                  className={cn(
+                    'absolute inset-0 flex items-center justify-center rounded-full',
+                    'bg-black/60 opacity-0 transition-opacity duration-200',
+                    'group-hover:opacity-100 focus:opacity-100',
+                    uploadingAvatar && 'opacity-100'
+                  )}
+                  aria-label="프로필 사진 변경"
+                >
+                  {uploadingAvatar ? (
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    <Camera className="h-6 w-6 text-white" />
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                />
               </div>
+
+              {/* Name */}
+              <h2 className="mt-4 text-xl font-bold text-white">{displayName}</h2>
 
               {/* Username */}
               {profile.username && (
-                <p className="mt-1 text-base text-muted">@{profile.username}</p>
-              )}
-
-              {/* Company */}
-              {profile.company_name && (
-                <p className="mt-1 text-muted">{profile.company_name}</p>
+                <p className="mt-1 text-sm text-[#8b95a1]">@{profile.username}</p>
               )}
 
               {/* Bio */}
               {profile.bio && (
-                <p className="mt-2 text-sm text-white/80">{profile.bio}</p>
+                <p className="mt-4 text-sm leading-relaxed text-[#8b95a1] text-center">
+                  {profile.bio}
+                </p>
               )}
 
-              {/* Tags row: business type, region */}
-              <div className="mt-3 flex flex-wrap gap-2 justify-center md:justify-start">
-                {/* Role badge */}
-                <Badge variant="default" size="md">
-                  {profile.role === 'admin'
-                    ? 'Administrator'
-                    : profile.role === 'expert'
-                      ? 'Expert'
-                      : 'Member'}
-                </Badge>
-                {businessTypeLabel && (
-                  <Badge variant="default" size="md">
-                    {businessTypeLabel}
-                  </Badge>
-                )}
-                {regionDisplay && (
-                  <Badge variant="default" size="md">
-                    {regionDisplay}
-                  </Badge>
-                )}
+              {/* Buttons */}
+              <div className="mt-6 flex w-full gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 rounded-xl border-white/10 text-white hover:bg-white/5"
+                  onClick={() => setAboutDialogOpen(true)}
+                >
+                  프로필 수정
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 rounded-xl border-white/10 text-white hover:bg-white/5"
+                  onClick={handleShareProfile}
+                >
+                  프로필 공유
+                </Button>
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Completeness */}
-            <div className="w-full md:w-48">
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                <p className="text-base font-medium text-muted">
-                  {t('completeness')}
-                </p>
-                <div className="mt-2 flex items-end gap-2">
-                  <span className="text-3xl font-bold text-white">
-                    {completeness}%
-                  </span>
-                </div>
-                <Progress
-                  value={completeness}
-                  size="md"
-                  indicatorColor={
-                    completeness >= 80
-                      ? 'success'
-                      : completeness >= 50
-                        ? 'warning'
-                        : 'primary'
-                  }
-                  className="mt-3"
-                />
-                {completeness < 100 && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="mt-2 p-0 h-auto text-sm"
-                  >
-                    {t('completeProfile')}
-                  </Button>
-                )}
-              </div>
+        {/* ============================================================ */}
+        {/* RIGHT CONTENT */}
+        {/* ============================================================ */}
+        <div className="flex-1 min-w-0 space-y-10">
+          {/* Title + Settings */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-white">마이페이지</h1>
+            <button
+              onClick={() => setExpertiseDialogOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.02] text-[#8b95a1] transition-colors hover:bg-white/[0.06] hover:text-white"
+              aria-label="설정"
+            >
+              <Settings className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* ======================================================== */}
+          {/* 기본 정보 */}
+          {/* ======================================================== */}
+          <section>
+            <h3 className="mb-4 text-lg font-bold text-white">기본 정보</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {/* Business Type - accent card */}
+              <InfoCard
+                icon={null}
+                label={businessTypeLabel ? `사업유형 : ${businessTypeLabel}` : '사업유형 미설정'}
+                sublabel={businessTypeLabel ? '사업유형에 캐릭터 추후' : null}
+                cardBg="bg-red-500/10"
+                cardBorder="border-red-500/20"
+                textColor="text-red-400"
+              />
+
+              {/* Business Stage */}
+              <InfoCard
+                icon={<div className="h-4 w-4 rounded-full bg-pink-400" />}
+                iconBg="bg-transparent"
+                iconColor=""
+                label={businessStageLabel ? `비즈니스 단계 Stage ${stageNumber}` : '비즈니스 단계 미설정'}
+              />
+
+              {/* Region */}
+              <InfoCard
+                icon={<MapPin className="h-5 w-5" />}
+                iconBg="bg-orange-500/10"
+                iconColor="text-orange-400"
+                label={regionDisplay}
+              />
+
+              {/* Industry */}
+              <InfoCard
+                icon={<Globe className="h-5 w-5" />}
+                iconBg="bg-cyan-500/10"
+                iconColor="text-cyan-400"
+                label={industryLabel || '사업분야 미설정'}
+                sublabel={subIndustryLabel || '세부분야'}
+              />
             </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          </section>
 
-      {/* Activity Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3, delay: 0.2 }}
-      >
-        <Card variant="default" padding="lg">
-          <CardHeader>
-            <CardTitle>{t('activity.title')}</CardTitle>
-          </CardHeader>
-          <CardContent className="mt-4">
-            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
-                <p className="text-2xl font-bold text-white">
-                  {activityStats?.postCount ?? 0}
-                </p>
-                <p className="mt-1 text-sm text-muted">{t('activity.posts')}</p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
-                <p className="text-2xl font-bold text-white">
-                  {activityStats?.commentCount ?? 0}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {t('activity.comments')}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
-                <p className="text-2xl font-bold text-white">
-                  {activityStats?.likeCount ?? 0}
-                </p>
-                <p className="mt-1 text-sm text-muted">{t('activity.likes')}</p>
-              </div>
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4 text-center">
-                <p className="text-2xl font-bold text-white">
-                  {activityStats?.bookmarkCount ?? 0}
-                </p>
-                <p className="mt-1 text-sm text-muted">
-                  {t('activity.bookmarks')}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
+          {/* ======================================================== */}
+          {/* 내 활동 */}
+          {/* ======================================================== */}
+          <section>
+            <h3 className="mb-4 text-lg font-bold text-white">내 활동</h3>
+            <ActivityTab userId={profile.id} />
+          </section>
 
-      {/* Profile Details */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.3 }}
-      >
-        <Card variant="default" padding="none">
-          <Accordion type="multiple" defaultValue={['about']} className="w-full">
-            {/* About Section */}
-            <AccordionItem value="about" className="border-white/[0.08] px-6">
-              <AccordionTrigger className="text-white hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-primary" />
-                  <span>{t('sections.about')}</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-6">
-                <div className="space-y-4">
-                  <div className="flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setAboutDialogOpen(true)}
-                      leftIcon={<Edit2 className="h-4 w-4" />}
-                    >
-                      {tCommon('edit')}
-                    </Button>
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <InfoRow
-                      icon={User}
-                      label={t('fields.name')}
-                      value={profile.full_name}
-                    />
-                    <InfoRow
-                      icon={AtSign}
-                      label="닉네임"
-                      value={profile.nickname}
-                    />
-                  </div>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <InfoRow
-                      icon={AtSign}
-                      label="사용자명"
-                      value={profile.username ? `@${profile.username}` : null}
-                    />
-                    <InfoRow
-                      icon={Building2}
-                      label={t('fields.company')}
-                      value={profile.company_name}
-                    />
-                  </div>
-                  <InfoRow
-                    icon={Mail}
-                    label={t('fields.email')}
-                    value={profile.email}
-                  />
-                  {profile.bio && (
-                    <InfoRow
-                      label={t('fields.bio')}
-                      value={profile.bio}
-                    />
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Expertise / Business Info Section */}
-            <AccordionItem value="expertise" className="border-white/[0.08] border-b-0 px-6">
-              <AccordionTrigger className="text-white hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-primary" />
-                  <span>{t('sections.expertise')}</span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-6">
-                <div className="space-y-4">
-                  <div className="flex justify-end">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setExpertiseDialogOpen(true)}
-                      leftIcon={<Edit2 className="h-4 w-4" />}
-                    >
-                      {tCommon('edit')}
-                    </Button>
-                  </div>
-                  {profile.industry ||
-                  profile.business_type ||
-                  profile.region ? (
-                    <div className="space-y-4">
-                      {/* Industry */}
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <InfoRow
-                          icon={Landmark}
-                          label="사업 분야"
-                          value={industryLabel}
-                        />
-                        <InfoRow
-                          label="세부 분야"
-                          value={subIndustryLabel}
-                        />
-                      </div>
-
-                      {/* Business Type & Stage */}
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <InfoRow
-                          icon={Briefcase}
-                          label="사업 유형"
-                          value={businessTypeLabel}
-                        />
-                        <InfoRow
-                          icon={TrendingUp}
-                          label="비즈니스 단계"
-                          value={businessStageLabel}
-                        />
-                      </div>
-
-                      {/* Region */}
-                      <InfoRow
-                        icon={MapPin}
-                        label="활동 지역"
-                        value={regionDisplay}
-                      />
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
-                      <p className="text-base text-muted">
-                        사업/전문 분야 정보가 아직 등록되지 않았습니다.
-                      </p>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="mt-2 p-0 h-auto"
-                        onClick={() => setExpertiseDialogOpen(true)}
-                      >
-                        정보 등록하기
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </Card>
-      </motion.div>
-
-      {/* Collaboration Requests Section (Expert only) */}
-      {profile.role === 'expert' && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
-        >
-          <CollaborationsTab userId={profile.id} />
-        </motion.div>
-      )}
-
-      {/* Activity Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: profile.role === 'expert' ? 0.5 : 0.4 }}
-      >
-        <ActivityTab userId={profile.id} />
-      </motion.div>
-
-      {/* Bookmarks Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.3, delay: profile.role === 'expert' ? 0.6 : 0.5 }}
-      >
-        <BookmarksTab userId={profile.id} />
-      </motion.div>
+          {/* ======================================================== */}
+          {/* 내 관심 */}
+          {/* ======================================================== */}
+          <section>
+            <h3 className="mb-4 text-lg font-bold text-white">내 관심</h3>
+            <BookmarksTab userId={profile.id} />
+          </section>
+        </div>
+      </div>
 
       {/* Edit Dialogs */}
       <EditAboutDialog
