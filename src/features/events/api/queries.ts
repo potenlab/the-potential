@@ -193,10 +193,10 @@ async function fetchUserEvents(
  */
 export function useUserEvents(
   filters: UserEventFilters = {},
-  options: { page?: number; limit?: number } = {}
+  options: { page?: number; limit?: number; sortBy?: UserEventSearchParams['sortBy']; sortOrder?: UserEventSearchParams['sortOrder'] } = {}
 ) {
-  const { page = 1, limit = DEFAULT_PAGE_SIZE } = options;
-  const searchParams: UserEventSearchParams = { ...filters, page, limit };
+  const { page = 1, limit = DEFAULT_PAGE_SIZE, sortBy, sortOrder } = options;
+  const searchParams: UserEventSearchParams = { ...filters, page, limit, sortBy, sortOrder };
 
   return useQuery({
     queryKey: eventQueryKeys.list(searchParams),

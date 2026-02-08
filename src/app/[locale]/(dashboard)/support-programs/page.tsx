@@ -37,20 +37,16 @@ import {
 // Support Programs Feature Components
 import { ProgramCard, ProgramDetailModal } from '@/features/support-programs/components';
 import { useSupportPrograms } from '@/features/support-programs/api/queries';
-import type { ProgramCategory, SupportProgramWithBookmark } from '@/features/support-programs/types';
+import type { SupportProgramWithBookmark } from '@/features/support-programs/types';
 
 /**
- * Category options for filter tabs
- * Only includes valid database program_category values
+ * Status filter options
  */
-const CATEGORY_OPTIONS: Array<{ value: ProgramCategory | 'all'; translationKey: string }> = [
+type StatusFilter = 'all' | 'ongoing' | 'closed';
+const STATUS_OPTIONS: Array<{ value: StatusFilter; translationKey: string }> = [
   { value: 'all', translationKey: 'all' },
-  { value: 'funding', translationKey: 'funding' },
-  { value: 'mentoring', translationKey: 'mentoring' },
-  { value: 'space', translationKey: 'space' },
-  { value: 'education', translationKey: 'education' },
-  { value: 'networking', translationKey: 'networking' },
-  { value: 'other', translationKey: 'other' },
+  { value: 'ongoing', translationKey: 'ongoing' },
+  { value: 'closed', translationKey: 'closed' },
 ];
 
 /**
@@ -130,33 +126,33 @@ function EmptyState({
  * Mobile Filter Panel Component
  */
 function MobileFilterPanel({
-  selectedCategory,
-  onCategoryChange,
+  selectedStatus,
+  onStatusChange,
   onClear,
   onClose,
 }: {
-  selectedCategory: ProgramCategory | 'all';
-  onCategoryChange: (category: ProgramCategory | 'all') => void;
+  selectedStatus: StatusFilter;
+  onStatusChange: (status: StatusFilter) => void;
   onClear: () => void;
   onClose: () => void;
 }) {
   const t = useTranslations('supportPrograms');
-  const tCategories = useTranslations('supportPrograms.categories');
+  const tStatus = useTranslations('supportPrograms.status');
 
   return (
     <div className="space-y-6">
-      {/* Category Selection */}
+      {/* Status Selection */}
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-white">{t('filters.title')}</h3>
         <div className="flex flex-wrap gap-2">
-          {CATEGORY_OPTIONS.map((category) => (
+          {STATUS_OPTIONS.map((option) => (
             <Button
-              key={category.value}
-              variant={selectedCategory === category.value ? 'primary' : 'outline'}
+              key={option.value}
+              variant={selectedStatus === option.value ? 'primary' : 'outline'}
               size="sm"
-              onClick={() => onCategoryChange(category.value)}
+              onClick={() => onStatusChange(option.value)}
             >
-              {tCategories(category.translationKey)}
+              {tStatus(option.translationKey)}
             </Button>
           ))}
         </div>
@@ -180,14 +176,14 @@ function MobileFilterPanel({
  */
 export default function SupportProgramsPage() {
   const t = useTranslations('supportPrograms');
-  const tCategories = useTranslations('supportPrograms.categories');
+  const tStatus = useTranslations('supportPrograms.status');
 
   // Mobile filter sheet state
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [selectedCategory, setSelectedCategory] = React.useState<ProgramCategory | 'all'>('all');
+  const [selectedStatus, setSelectedStatus] = React.useState<StatusFilter>('all');
   const [debouncedKeyword, setDebouncedKeyword] = React.useState<string | undefined>(undefined);
 
   // Modal state - store ID only so bookmark state stays synced with query cache
@@ -206,9 +202,9 @@ export default function SupportProgramsPage() {
     debouncedSetKeyword(value);
   };
 
-  // Handle category change
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value as ProgramCategory | 'all');
+  // Handle status change
+  const handleStatusChange = (value: string) => {
+    setSelectedStatus(value as StatusFilter);
   };
 
   // Clear search only
@@ -221,7 +217,7 @@ export default function SupportProgramsPage() {
   const handleClearFilters = () => {
     setSearchQuery('');
     setDebouncedKeyword(undefined);
-    setSelectedCategory('all');
+    setSelectedStatus('all');
   };
 
   // Handle program card click - open modal
@@ -241,14 +237,14 @@ export default function SupportProgramsPage() {
 
   // Check if any filters are active
   const hasActiveFilters = React.useMemo(() => {
-    return !!(debouncedKeyword || selectedCategory !== 'all');
-  }, [debouncedKeyword, selectedCategory]);
+    return !!(debouncedKeyword || selectedStatus !== 'all');
+  }, [debouncedKeyword, selectedStatus]);
 
   // Fetch programs with current filters
   const { data, isLoading, isError, refetch } = useSupportPrograms({
-    category: selectedCategory === 'all' ? undefined : selectedCategory,
     keyword: debouncedKeyword,
-    showUpcoming: true, // Show programs with upcoming deadlines
+    showOpen: selectedStatus === 'ongoing',
+    showClosed: selectedStatus === 'closed',
   });
 
   const programs = data?.programs ?? [];
@@ -322,8 +318,8 @@ export default function SupportProgramsPage() {
               <SheetTitle className="text-white">{t('filters.title')}</SheetTitle>
             </SheetHeader>
             <MobileFilterPanel
-              selectedCategory={selectedCategory}
-              onCategoryChange={handleCategoryChange}
+              selectedStatus={selectedStatus}
+              onStatusChange={handleStatusChange}
               onClear={handleClearFilters}
               onClose={() => setIsFilterOpen(false)}
             />
@@ -331,38 +327,38 @@ export default function SupportProgramsPage() {
         </Sheet>
       </div>
 
-      {/* Category Filter Tabs - Desktop */}
+      {/* Status Filter Tabs - Desktop */}
       <div className="mb-6 hidden sm:block">
         <Tabs
-          value={selectedCategory}
-          onValueChange={handleCategoryChange}
+          value={selectedStatus}
+          onValueChange={handleStatusChange}
           className="w-full"
         >
           <TabsList variant="pills" className="flex-wrap justify-start">
-            {CATEGORY_OPTIONS.map((category) => (
+            {STATUS_OPTIONS.map((option) => (
               <TabsTrigger
-                key={category.value}
-                value={category.value}
+                key={option.value}
+                value={option.value}
                 className="text-sm"
               >
-                {tCategories(category.translationKey)}
+                {tStatus(option.translationKey)}
               </TabsTrigger>
             ))}
           </TabsList>
         </Tabs>
       </div>
 
-      {/* Active Category Badge - Mobile */}
-      {selectedCategory !== 'all' && (
+      {/* Active Status Badge - Mobile */}
+      {selectedStatus !== 'all' && (
         <div className="mb-4 flex items-center gap-2 sm:hidden">
           <span className="text-sm text-muted">{t('filters.title')}:</span>
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => setSelectedCategory('all')}
+            onClick={() => setSelectedStatus('all')}
             className="gap-1"
           >
-            {tCategories(selectedCategory)}
+            {tStatus(selectedStatus)}
             <X className="h-3 w-3" />
           </Button>
         </div>

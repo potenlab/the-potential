@@ -17,7 +17,7 @@
 
 import * as React from 'react';
 import { useTranslations } from 'next-intl';
-import { Search, X, SlidersHorizontal, Plus, Calendar, Tag, Megaphone } from 'lucide-react';
+import { Search, X, SlidersHorizontal, Plus, Calendar, Tag, Megaphone, ClipboardList, MoreHorizontal } from 'lucide-react';
 import { useDebouncedCallback } from 'use-debounce';
 
 // UI Components
@@ -56,16 +56,16 @@ import {
   EventDetailModal,
 } from '@/features/events/components';
 import { useUserEvents, useDeleteEventMutation } from '@/features/events/api/queries';
-import type { EventType, EventCategory, UserEventWithAuthor } from '@/features/events/types';
+import type { EventType, UserEventWithAuthor } from '@/features/events/types';
 
 // Supabase
 import { supabase } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 /**
- * Event type options for filter tabs
+ * Category filter options (maps to event_type in database)
  */
-const EVENT_TYPE_OPTIONS: Array<{
+const CATEGORY_OPTIONS: Array<{
   value: EventType | 'all';
   translationKey: string;
   icon: React.ElementType;
@@ -74,55 +74,54 @@ const EVENT_TYPE_OPTIONS: Array<{
   { value: 'event', translationKey: 'event', icon: Calendar },
   { value: 'ad', translationKey: 'ad', icon: Tag },
   { value: 'announcement', translationKey: 'announcement', icon: Megaphone },
+  // These require DB enum extension (survey, other)
+  // { value: 'survey', translationKey: 'survey', icon: ClipboardList },
+  // { value: 'other', translationKey: 'other', icon: MoreHorizontal },
 ];
 
 /**
- * Category options for filter
+ * Sort options
  */
-const CATEGORY_OPTIONS: Array<{ value: EventCategory | 'all'; translationKey: string }> = [
-  { value: 'all', translationKey: 'all' },
-  { value: 'funding', translationKey: 'funding' },
-  { value: 'mentoring', translationKey: 'mentoring' },
-  { value: 'space', translationKey: 'space' },
-  { value: 'education', translationKey: 'education' },
-  { value: 'networking', translationKey: 'networking' },
-  { value: 'other', translationKey: 'other' },
+type SortOption = 'latest' | 'popular';
+const SORT_OPTIONS: Array<{ value: SortOption; translationKey: string }> = [
+  { value: 'latest', translationKey: 'latest' },
+  { value: 'popular', translationKey: 'popular' },
 ];
 
 /**
  * Mobile Filter Panel Component
  */
 function MobileFilterPanel({
-  selectedEventType,
   selectedCategory,
-  onEventTypeChange,
+  selectedSort,
   onCategoryChange,
+  onSortChange,
   onClear,
   onClose,
 }: {
-  selectedEventType: EventType | 'all';
-  selectedCategory: EventCategory | 'all';
-  onEventTypeChange: (eventType: EventType | 'all') => void;
-  onCategoryChange: (category: EventCategory | 'all') => void;
+  selectedCategory: EventType | 'all';
+  selectedSort: SortOption;
+  onCategoryChange: (category: EventType | 'all') => void;
+  onSortChange: (sort: SortOption) => void;
   onClear: () => void;
   onClose: () => void;
 }) {
   const t = useTranslations('events');
   const tTypes = useTranslations('events.types');
-  const tCategories = useTranslations('supportPrograms.categories');
+  const tSort = useTranslations('events.sort');
 
   return (
     <div className="space-y-6">
-      {/* Event Type Selection */}
+      {/* Category Selection */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-white">{t('filters.eventType')}</h3>
+        <h3 className="text-sm font-medium text-white">{t('filters.category')}</h3>
         <div className="flex flex-wrap gap-2">
-          {EVENT_TYPE_OPTIONS.map((option) => (
+          {CATEGORY_OPTIONS.map((option) => (
             <Button
               key={option.value}
-              variant={selectedEventType === option.value ? 'primary' : 'outline'}
+              variant={selectedCategory === option.value ? 'primary' : 'outline'}
               size="sm"
-              onClick={() => onEventTypeChange(option.value)}
+              onClick={() => onCategoryChange(option.value)}
             >
               {option.value === 'all' ? t('filters.all') : tTypes(option.translationKey)}
             </Button>
@@ -130,18 +129,18 @@ function MobileFilterPanel({
         </div>
       </div>
 
-      {/* Category Selection */}
+      {/* Sort Selection */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium text-white">{t('filters.category')}</h3>
+        <h3 className="text-sm font-medium text-white">{t('filters.sort')}</h3>
         <div className="flex flex-wrap gap-2">
-          {CATEGORY_OPTIONS.map((category) => (
+          {SORT_OPTIONS.map((option) => (
             <Button
-              key={category.value}
-              variant={selectedCategory === category.value ? 'primary' : 'outline'}
+              key={option.value}
+              variant={selectedSort === option.value ? 'primary' : 'outline'}
               size="sm"
-              onClick={() => onCategoryChange(category.value)}
+              onClick={() => onSortChange(option.value)}
             >
-              {tCategories(category.translationKey)}
+              {tSort(option.translationKey)}
             </Button>
           ))}
         </div>
@@ -166,7 +165,7 @@ function MobileFilterPanel({
 export default function EventsPage() {
   const t = useTranslations('events');
   const tTypes = useTranslations('events.types');
-  const tCategories = useTranslations('supportPrograms.categories');
+  const tSort = useTranslations('events.sort');
   const tCommon = useTranslations('common');
 
   // Auth state
@@ -207,8 +206,8 @@ export default function EventsPage() {
 
   // Search and filter state
   const [searchQuery, setSearchQuery] = React.useState('');
-  const [selectedEventType, setSelectedEventType] = React.useState<EventType | 'all'>('all');
-  const [selectedCategory, setSelectedCategory] = React.useState<EventCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = React.useState<EventType | 'all'>('all');
+  const [selectedSort, setSelectedSort] = React.useState<SortOption>('latest');
   const [debouncedKeyword, setDebouncedKeyword] = React.useState<string | undefined>(undefined);
   const [currentPage, setCurrentPage] = React.useState(1);
 
@@ -235,16 +234,15 @@ export default function EventsPage() {
     debouncedSetKeyword(value);
   };
 
-  // Handle event type change
-  const handleEventTypeChange = (value: string) => {
-    setSelectedEventType(value as EventType | 'all');
-    setCurrentPage(1); // Reset to first page on filter change
+  // Handle category change (maps to event_type in DB)
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategory(value as EventType | 'all');
+    setCurrentPage(1);
   };
 
-  // Handle category change
-  const handleCategoryChange = (value: string) => {
-    setSelectedCategory(value as EventCategory | 'all');
-    setCurrentPage(1); // Reset to first page on filter change
+  // Handle sort change
+  const handleSortChange = (value: SortOption) => {
+    setSelectedSort(value);
   };
 
   // Clear search only
@@ -258,8 +256,8 @@ export default function EventsPage() {
   const handleClearFilters = () => {
     setSearchQuery('');
     setDebouncedKeyword(undefined);
-    setSelectedEventType('all');
     setSelectedCategory('all');
+    setSelectedSort('latest');
     setCurrentPage(1);
   };
 
@@ -332,17 +330,20 @@ export default function EventsPage() {
 
   // Check if any filters are active
   const hasActiveFilters = React.useMemo(() => {
-    return !!(debouncedKeyword || selectedEventType !== 'all' || selectedCategory !== 'all');
-  }, [debouncedKeyword, selectedEventType, selectedCategory]);
+    return !!(debouncedKeyword || selectedCategory !== 'all' || selectedSort !== 'latest');
+  }, [debouncedKeyword, selectedCategory, selectedSort]);
 
   // Fetch events with current filters
   const { data, isLoading, isError, refetch } = useUserEvents(
     {
-      eventType: selectedEventType === 'all' ? undefined : selectedEventType,
-      category: selectedCategory === 'all' ? undefined : selectedCategory,
+      eventType: selectedCategory === 'all' ? undefined : selectedCategory,
       keyword: debouncedKeyword,
     },
-    { page: currentPage }
+    {
+      page: currentPage,
+      sortBy: selectedSort === 'popular' ? 'view_count' : 'created_at',
+      sortOrder: 'desc',
+    }
   );
 
   const events = data?.events ?? [];
@@ -398,19 +399,19 @@ export default function EventsPage() {
           />
         </div>
 
-        {/* Category Filter - Desktop */}
+        {/* Sort Filter - Desktop */}
         <div className="hidden sm:block">
           <Select
-            value={selectedCategory}
-            onValueChange={handleCategoryChange}
+            value={selectedSort}
+            onValueChange={(value) => handleSortChange(value as SortOption)}
           >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder={t('filters.category')} />
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder={t('filters.sort')} />
             </SelectTrigger>
             <SelectContent>
-              {CATEGORY_OPTIONS.map((category) => (
-                <SelectItem key={category.value} value={category.value}>
-                  {tCategories(category.translationKey)}
+              {SORT_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {tSort(option.translationKey)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -443,10 +444,10 @@ export default function EventsPage() {
               <SheetTitle className="text-white">{t('filters.title')}</SheetTitle>
             </SheetHeader>
             <MobileFilterPanel
-              selectedEventType={selectedEventType}
               selectedCategory={selectedCategory}
-              onEventTypeChange={handleEventTypeChange}
+              selectedSort={selectedSort}
               onCategoryChange={handleCategoryChange}
+              onSortChange={handleSortChange}
               onClear={handleClearFilters}
               onClose={() => setIsFilterOpen(false)}
             />
@@ -454,15 +455,15 @@ export default function EventsPage() {
         </Sheet>
       </div>
 
-      {/* Event Type Filter Tabs - Desktop */}
+      {/* Category Filter Tabs - Desktop */}
       <div className="mb-6 hidden sm:block">
         <Tabs
-          value={selectedEventType}
-          onValueChange={handleEventTypeChange}
+          value={selectedCategory}
+          onValueChange={handleCategoryChange}
           className="w-full"
         >
           <TabsList variant="pills" className="flex-wrap justify-start">
-            {EVENT_TYPE_OPTIONS.map((option) => {
+            {CATEGORY_OPTIONS.map((option) => {
               const Icon = option.icon;
               return (
                 <TabsTrigger
@@ -480,20 +481,9 @@ export default function EventsPage() {
       </div>
 
       {/* Active Filters Badge - Mobile */}
-      {(selectedEventType !== 'all' || selectedCategory !== 'all') && (
+      {(selectedCategory !== 'all' || selectedSort !== 'latest') && (
         <div className="mb-4 flex flex-wrap items-center gap-2 sm:hidden">
           <span className="text-sm text-muted">{t('filters.title')}:</span>
-          {selectedEventType !== 'all' && (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setSelectedEventType('all')}
-              className="gap-1"
-            >
-              {tTypes(selectedEventType)}
-              <X className="h-3 w-3" />
-            </Button>
-          )}
           {selectedCategory !== 'all' && (
             <Button
               variant="secondary"
@@ -501,7 +491,18 @@ export default function EventsPage() {
               onClick={() => setSelectedCategory('all')}
               className="gap-1"
             >
-              {tCategories(selectedCategory)}
+              {tTypes(selectedCategory)}
+              <X className="h-3 w-3" />
+            </Button>
+          )}
+          {selectedSort !== 'latest' && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setSelectedSort('latest')}
+              className="gap-1"
+            >
+              {tSort(selectedSort)}
               <X className="h-3 w-3" />
             </Button>
           )}

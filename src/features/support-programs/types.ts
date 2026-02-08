@@ -62,6 +62,8 @@ export interface SupportProgramFilters {
   showUpcoming?: boolean;
   /** Show only programs that are currently open for applications */
   showOpen?: boolean;
+  /** Show only programs with past deadlines */
+  showClosed?: boolean;
 }
 
 /**

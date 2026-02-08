@@ -50,6 +50,7 @@ async function fetchSupportPrograms(
     keyword,
     showUpcoming = false,
     showOpen = false,
+    showClosed = false,
     limit = DEFAULT_PAGE_SIZE,
     offset = 0,
     sortBy = 'application_deadline',
@@ -122,6 +123,12 @@ async function fetchSupportPrograms(
     query = query.or(
       `and(application_start.lte.${now},application_deadline.gt.${now}),and(application_start.is.null,application_deadline.gt.${now})`
     );
+  }
+
+  // Apply closed filter - show only programs with past deadlines
+  if (showClosed) {
+    const now = new Date().toISOString();
+    query = query.not('application_deadline', 'is', null).lte('application_deadline', now);
   }
 
   // Apply sorting
