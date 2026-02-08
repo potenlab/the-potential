@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { useRouter } from '@/i18n/navigation';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase/client';
 import { uploadFile } from '@/lib/supabase/storage';
@@ -67,7 +66,6 @@ const INITIAL_DATA: OnboardingData = {
 };
 
 export function OnboardingForm() {
-  const router = useRouter();
   const [currentStep, setCurrentStep] = React.useState(1);
   const [data, setData] = React.useState<OnboardingData>(INITIAL_DATA);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -194,10 +192,13 @@ export function OnboardingForm() {
         profileUpdate.avatar_url = avatarUrl;
       }
 
-      const { error: updateError } = await supabase
+      // Use .select().single() to verify the update actually wrote data
+      const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
         .update(profileUpdate)
-        .eq('id', user.id);
+        .eq('id', user.id)
+        .select('onboarding_completed')
+        .single();
 
       if (updateError) {
         // Check for unique username constraint (code 23505 = unique_violation)
@@ -214,8 +215,15 @@ export function OnboardingForm() {
         return;
       }
 
-      // Redirect to support programs
-      router.push('/support-programs');
+      // Verify the update was actually applied
+      if (!updatedProfile?.onboarding_completed) {
+        setError('프로필 저장에 실패했습니다. 다시 시도해주세요.');
+        return;
+      }
+
+      // Hard navigation to ensure middleware sees fresh DB state
+      const locale = window.location.pathname.split('/')[1] || 'ko';
+      window.location.replace(`/${locale}/support-programs`);
     } catch {
       setError('예상치 못한 오류가 발생했습니다. 다시 시도해주세요.');
     } finally {

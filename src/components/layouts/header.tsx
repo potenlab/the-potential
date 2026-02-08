@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname, useRouter } from '@/i18n/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, TrendingUp, MessageCircle, UserSearch, LogIn, CalendarDays } from 'lucide-react';
+import { LogOut, LogIn } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { supabase } from '@/lib/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
@@ -43,10 +43,10 @@ import { NotificationPopover } from '@/features/notifications';
 
 /** Navigation items configuration with translation keys and icons */
 const navItems = [
-  { href: '/support-programs', labelKey: 'support', icon: TrendingUp },
-  { href: '/events', labelKey: 'events', icon: CalendarDays },
-  { href: '/thread', labelKey: 'thread', icon: MessageCircle },
-  { href: '/experts', labelKey: 'experts', icon: UserSearch },
+  { href: '/support-programs', labelKey: 'support' },
+  { href: '/events', labelKey: 'events' },
+  { href: '/thread', labelKey: 'thread' },
+  { href: '/experts', labelKey: 'experts' },
 ] as const;
 
 export function Header() {
@@ -85,14 +85,13 @@ export function Header() {
       <div className="max-w-7xl mx-auto h-full px-4 md:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <Logo height={28} />
+          <Logo height={24} />
         </Link>
 
         {/* Navigation - Desktop Only */}
         <nav className="hidden md:flex items-center gap-2 relative">
           {navItems.map((item) => {
             const isActive = pathname.startsWith(item.href);
-            const Icon = item.icon;
             return (
               <Link
                 key={item.href}
@@ -100,13 +99,10 @@ export function Header() {
                 onMouseEnter={() => setHoveredItem(item.href)}
                 onMouseLeave={() => setHoveredItem(null)}
                 className={cn(
-                  'relative flex items-center gap-2 px-5 py-2.5 text-base font-semibold transition-colors rounded-full z-10',
+                  'relative flex items-center px-5 py-2.5 text-base font-semibold whitespace-nowrap transition-colors rounded-full z-10',
                   isActive ? 'text-white' : 'text-[#8B95A1] hover:text-white hover:bg-white/5'
                 )}
               >
-                {/* Navigation icon */}
-                <Icon className="relative z-10 h-5 w-5" />
-                {/* Navigation label with translation */}
                 <span className="relative z-10">{t(item.labelKey)}</span>
 
                 {/* Animated active indicator */}

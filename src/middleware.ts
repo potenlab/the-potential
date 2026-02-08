@@ -113,14 +113,25 @@ export async function middleware(request: NextRequest) {
 
   // For authenticated users on any non-onboarding route, enforce onboarding completion
   if (user) {
-    const { data: profile } = await supabase
+    // Query profile; if the query fails let the request through (AuthGuard handles client-side)
+    const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role, approval_status, company_name, onboarding_completed')
+      .select('role, approval_status, onboarding_completed')
       .eq('id', user.id)
       .single();
 
-    // If onboarding not completed → go to signup/onboarding
-    if (!profile || !profile.onboarding_completed) {
+    if (profileError || !profile) {
+      // Profile query failed — don't redirect to prevent loops.
+      // Let the page load; client-side AuthGuard will handle if needed.
+      if (isAuthRoute) {
+        // Authenticated but profile error on auth route → redirect to home
+        return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      }
+      return finalResponse;
+    }
+
+    // If onboarding not completed → redirect to signup/onboarding
+    if (!profile.onboarding_completed) {
       return NextResponse.redirect(new URL(`/${locale}/signup/onboarding`, request.url));
     }
 

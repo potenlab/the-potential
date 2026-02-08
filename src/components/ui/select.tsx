@@ -99,14 +99,14 @@ function SelectContent({
         data-slot="select-content"
         className={cn(
           // Base styles - dark theme
-          "relative z-50 overflow-hidden",
+          "relative z-50",
           "bg-card border border-white/10",
           // Rounded corners matching design system
           "rounded-2xl",
           // Shadow
           "shadow-xl",
-          // Size constraints
-          "max-h-[--radix-select-content-available-height] min-w-[8rem]",
+          // Size constraints – let the Viewport handle scrolling
+          "min-w-[8rem]",
           "origin-[--radix-select-content-transform-origin]",
           // Animations
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
@@ -130,7 +130,7 @@ function SelectContent({
           className={cn(
             "p-1.5",
             position === "popper" &&
-              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+              "max-h-[min(var(--radix-select-content-available-height,300px),256px)] w-full min-w-[var(--radix-select-trigger-width)] overflow-y-auto"
           )}
         >
           {children}
