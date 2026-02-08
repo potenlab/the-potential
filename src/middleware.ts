@@ -15,8 +15,8 @@ import { createClient, routeConfig } from '@/lib/supabase/middleware';
  *
  * Route protection:
  * - Protected routes: Handled client-side by AuthGuard (opens auth modal)
- * - Auth routes (login, signup): Redirect authenticated users to /[locale]/home
- * - Admin routes: Require admin role, redirect non-admins to /[locale]/home
+ * - Auth routes (login, signup): Redirect authenticated users to /[locale]/support-programs
+ * - Admin routes: Require admin role, redirect non-admins to /[locale]/support-programs
  */
 
 // Create the next-intl middleware handler
@@ -125,7 +125,7 @@ export async function middleware(request: NextRequest) {
       // Let the page load; client-side AuthGuard will handle if needed.
       if (isAuthRoute) {
         // Authenticated but profile error on auth route → redirect to home
-        return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+        return NextResponse.redirect(new URL(`/${locale}/support-programs`, request.url));
       }
       return finalResponse;
     }
@@ -137,13 +137,13 @@ export async function middleware(request: NextRequest) {
 
     // Onboarding done: redirect away from auth routes (login, signup)
     if (isAuthRoute) {
-      return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+      return NextResponse.redirect(new URL(`/${locale}/support-programs`, request.url));
     }
 
     // Admin routes: check role
     if (isAdminRoute) {
       if (profile.role !== 'admin' || profile.approval_status !== 'approved') {
-        return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
+        return NextResponse.redirect(new URL(`/${locale}/support-programs`, request.url));
       }
     }
 

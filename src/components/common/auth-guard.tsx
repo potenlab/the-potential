@@ -6,11 +6,9 @@ import { useAuthModalStore } from '@/stores/auth-modal-store';
 import { useRouter, usePathname } from '@/i18n/navigation';
 
 const protectedRoutes = [
-  '/thread',
   '/experts',
   '/profile',
   '/clubs',
-  '/support-programs',
   '/expert-registration',
 ];
 

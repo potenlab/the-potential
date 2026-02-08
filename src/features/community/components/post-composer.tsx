@@ -22,6 +22,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useCreatePost } from '../api/queries';
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/use-auth';
+import { useAuthModalStore } from '@/stores/auth-modal-store';
 
 // Constants
 const MAX_CHARACTER_COUNT = 5000;
@@ -36,12 +38,27 @@ interface ImagePreview {
 
 export function PostComposer() {
   const t = useTranslations('thread.compose');
+  const { isAuthenticated } = useAuth();
+  const openLogin = useAuthModalStore((s) => s.openLogin);
   const [content, setContent] = React.useState('');
   const [images, setImages] = React.useState<ImagePreview[]>([]);
   const [isUploading, setIsUploading] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const createPost = useCreatePost();
+
+  // Show a placeholder that opens the login modal when clicked
+  if (!isAuthenticated) {
+    return (
+      <button
+        type="button"
+        onClick={openLogin}
+        className="w-full cursor-pointer rounded-2xl border border-white/[0.08] bg-white/[0.02] px-4 py-4 text-left text-sm text-[#8b95a1] transition-colors hover:border-white/[0.15] hover:bg-white/[0.04]"
+      >
+        {t('placeholder')}
+      </button>
+    );
+  }
 
   // Character count calculations
   const characterCount = content.length;

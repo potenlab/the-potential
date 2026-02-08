@@ -57,7 +57,7 @@ export async function createClient(request: NextRequest) {
  */
 export const routeConfig = {
   // Routes that require authentication
-  protectedRoutes: ['/thread', '/experts', '/profile', '/clubs', '/support-programs', '/expert-registration'],
+  protectedRoutes: ['/experts', '/profile', '/clubs', '/expert-registration'],
   // Routes that are only accessible when NOT authenticated
   authRoutes: ['/login', '/signup'],
   // Routes that require authentication but should NOT redirect to /home

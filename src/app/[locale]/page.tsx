@@ -1,40 +1,14 @@
-import { Suspense } from 'react';
-import { setRequestLocale } from 'next-intl/server';
-import { getTranslations } from 'next-intl/server';
-import { routing } from '@/i18n/routing';
-import AboutPageClient from './about-page-client';
+import { redirect } from 'next/navigation';
 
-interface HomePageProps {
-  params: Promise<{ locale: string }>;
-}
-
-export async function generateMetadata({
+/**
+ * Root page (/) redirects to /support-programs.
+ * The About page is now at /about.
+ */
+export default async function RootPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: 'metadata' });
-
-  return {
-    title: `The Potential`,
-    description: t('description'),
-    alternates: {
-      canonical: `/${locale}`,
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [l, `/${l}`])
-      ),
-    },
-  };
-}
-
-export default async function HomePage({ params }: HomePageProps) {
-  const { locale } = await params;
-  setRequestLocale(locale);
-
-  return (
-    <Suspense>
-      <AboutPageClient />
-    </Suspense>
-  );
+  redirect(`/${locale}/support-programs`);
 }

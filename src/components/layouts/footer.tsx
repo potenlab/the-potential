@@ -48,7 +48,7 @@ const exploreCards = [
 
 /** Quick links that map to footer.links translations */
 const quickLinks = [
-  { key: 'about' as const, href: '/' },
+  { key: 'about' as const, href: '/about' },
   { key: 'terms' as const, href: '/terms' },
   { key: 'privacy' as const, href: '/privacy' },
   { key: 'contact' as const, href: '/contact' },
