@@ -71,9 +71,9 @@ export function OnboardingForm() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Pre-populate avatar and nickname from Google auth metadata
+  // Load existing profile data so returning users can resume onboarding
   React.useEffect(() => {
-    async function loadUserMetadata() {
+    async function loadExistingProfile() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -85,15 +85,29 @@ export function OnboardingForm() {
       const fullName =
         metadata.full_name || metadata.name || '';
 
+      // Fetch existing profile data from DB
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username, nickname, bio, avatar_url, region, sub_region, industry, sub_industry, business_type, business_stage')
+        .eq('id', user.id)
+        .single();
+
       setData((prev) => ({
         ...prev,
-        // Only set if not already filled by the user
-        avatarPreview: prev.avatarPreview || googleAvatarUrl,
-        nickname: prev.nickname || fullName,
+        avatarPreview: profile?.avatar_url || prev.avatarPreview || googleAvatarUrl,
+        username: profile?.username || prev.username || '',
+        nickname: profile?.nickname || prev.nickname || fullName,
+        bio: profile?.bio || prev.bio || '',
+        region: profile?.region || prev.region || '',
+        subRegion: profile?.sub_region || prev.subRegion || '',
+        industry: profile?.industry || prev.industry || '',
+        subIndustry: profile?.sub_industry || prev.subIndustry || '',
+        businessType: profile?.business_type || prev.businessType || '',
+        businessStage: profile?.business_stage || prev.businessStage || '',
       }));
     }
 
-    loadUserMetadata();
+    loadExistingProfile();
   }, []);
 
   const handleUpdate = React.useCallback(
