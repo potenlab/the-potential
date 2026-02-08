@@ -222,28 +222,28 @@ export function PostCard({
         className={cn('overflow-hidden hover:!scale-100', className)}
         onClick={handleCardClick}
         role="article"
-        aria-label={`Post by ${post.author.full_name || 'Unknown'}`}
+        aria-label={`Post by ${post.author?.full_name || 'Unknown'}`}
       >
         <CardContent className="p-4 sm:p-5">
           {/* Header: Author info and timestamp */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-center gap-3">
               <Avatar size="md">
-                {post.author.avatar_url ? (
+                {post.author?.avatar_url ? (
                   <AvatarImage
                     src={post.author.avatar_url}
-                    alt={post.author.full_name || 'User avatar'}
+                    alt={post.author?.full_name || 'User avatar'}
                   />
                 ) : null}
                 <AvatarFallback>
-                  {getInitials(post.author.full_name)}
+                  {getInitials(post.author?.full_name)}
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex flex-col gap-0.5">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold text-white">
-                    {post.author.full_name || 'Unknown User'}
+                    {post.author?.full_name || 'Unknown User'}
                   </span>
                   {post.is_pinned && (
                     <Badge variant="default" size="sm">
@@ -252,7 +252,7 @@ export function PostCard({
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-base text-muted">
-                  {post.author.company_name && (
+                  {post.author?.company_name && (
                     <>
                       <span>{post.author.company_name}</span>
                       <span className="text-white/20">|</span>
@@ -308,7 +308,7 @@ export function PostCard({
           {post.media_urls && post.media_urls.length > 0 && (
             <MediaGrid
               urls={post.media_urls}
-              alt={`Post by ${post.author.full_name}`}
+              alt={`Post by ${post.author?.full_name || 'Unknown'}`}
             />
           )}
 
