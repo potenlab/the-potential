@@ -163,3 +163,31 @@ export function useUnsuspendMember() {
     },
   });
 }
+
+/**
+ * Hook to permanently delete a member (auth user + profile)
+ * Calls a server API route that uses the service role key.
+ */
+export function useDeleteMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (memberId: string) => {
+      const res = await fetch('/api/admin/delete-member', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json();
+        throw new Error(body.error || 'Failed to delete member');
+      }
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'members'] });
+    },
+  });
+}

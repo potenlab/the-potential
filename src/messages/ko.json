@@ -954,7 +954,9 @@
       "rejectReasonPlaceholder": "반려 사유를 입력하세요",
       "approveSuccess": "회원이 승인되었습니다",
       "rejectSuccess": "회원이 반려되었습니다",
-      "suspendSuccess": "회원이 정지되었습니다"
+      "suspendSuccess": "회원이 정지되었습니다",
+      "deleteConfirm": "이 회원을 완전히 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "deleteSuccess": "회원이 삭제되었습니다"
     },
     "experts": {
       "title": "전문가 검증",

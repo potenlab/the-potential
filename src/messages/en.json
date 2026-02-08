@@ -954,7 +954,9 @@
       "rejectReasonPlaceholder": "Enter rejection reason",
       "approveSuccess": "Member approved successfully",
       "rejectSuccess": "Member rejected successfully",
-      "suspendSuccess": "Member suspended successfully"
+      "suspendSuccess": "Member suspended successfully",
+      "deleteConfirm": "Are you sure you want to permanently delete this member? This cannot be undone.",
+      "deleteSuccess": "Member deleted successfully"
     },
     "experts": {
       "title": "Expert Verification",

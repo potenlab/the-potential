@@ -85,7 +85,7 @@ export function Header() {
       <div className="max-w-7xl mx-auto h-full px-4 md:px-8 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center shrink-0">
-          <Logo height={24} />
+          <Logo height={20} />
         </Link>
 
         {/* Navigation - Desktop Only */}

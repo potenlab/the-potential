@@ -13,6 +13,7 @@ import {
   Eye,
   Ban,
   Unlock,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -23,6 +24,7 @@ import {
   useRejectMember,
   useSuspendMember,
   useUnsuspendMember,
+  useDeleteMember,
   type PendingMember,
 } from '@/features/admin/api';
 import { Button } from '@/components/ui/button';
@@ -89,6 +91,7 @@ export default function MembersPage() {
   const [selectedMember, setSelectedMember] = useState<PendingMember | null>(null);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
 
   // API hooks
@@ -101,6 +104,7 @@ export default function MembersPage() {
   const rejectMutation = useRejectMember();
   const suspendMutation = useSuspendMember();
   const unsuspendMutation = useUnsuspendMember();
+  const deleteMutation = useDeleteMember();
 
   // Get status badge variant
   const getStatusBadgeVariant = (status: ApprovalStatus) => {
@@ -191,6 +195,26 @@ export default function MembersPage() {
   const openRejectDialog = (member: PendingMember) => {
     setSelectedMember(member);
     setRejectDialogOpen(true);
+  };
+
+  // Open delete dialog
+  const openDeleteDialog = (member: PendingMember) => {
+    setSelectedMember(member);
+    setDeleteDialogOpen(true);
+  };
+
+  // Handle delete
+  const handleDelete = async () => {
+    if (!selectedMember) return;
+
+    try {
+      await deleteMutation.mutateAsync(selectedMember.id);
+      toast.success(t('deleteSuccess'));
+      setDeleteDialogOpen(false);
+      setSelectedMember(null);
+    } catch {
+      toast.error(tCommon('error'));
+    }
   };
 
   return (
@@ -435,6 +459,13 @@ export default function MembersPage() {
                                 <Unlock className="h-4 w-4" />
                                 {t('unsuspend')}
                               </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="gap-2 text-red-400 focus:text-red-400"
+                                onClick={() => openDeleteDialog(member)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                                {t('delete')}
+                              </DropdownMenuItem>
                             </>
                           )}
                         </DropdownMenuContent>
@@ -513,6 +544,34 @@ export default function MembersPage() {
               disabled={!rejectReason.trim()}
             >
               {t('reject')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('deleteConfirm')}</DialogTitle>
+            <DialogDescription>
+              {selectedMember?.full_name || selectedMember?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleteMutation.isPending}
+            >
+              {tCommon('cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              loading={deleteMutation.isPending}
+            >
+              {t('delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

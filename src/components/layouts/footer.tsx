@@ -204,7 +204,7 @@ export function Footer() {
           <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
             {/* Brand */}
             <div className="max-w-xs">
-              <Logo height={22} className="opacity-80" />
+              <Logo height={18} className="opacity-80" />
               <p className="mt-3 text-sm leading-relaxed text-[#8B95A1]/80">
                 {t('description')}
               </p>
